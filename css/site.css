@@ -154,6 +154,7 @@ a { color: inherit; }
 .contrib__legend i.k1 { background: #1b1919; } .contrib__legend i.k2 { background: #23473a; }
 .contrib__sub b { font-weight: 600; color: var(--ink); }
 .contrib__board canvas { border-radius: 14px; }
+.contrib--bare { padding: clamp(10px, 1.2vw, 14px); }
 @keyframes rec { 50% { opacity: .35; } }
 @media (max-width: 520px) { .contrib__foot > span:first-child { display: none; } .contrib__foot { justify-content: flex-end; } }
 

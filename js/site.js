@@ -165,9 +165,6 @@ const host = (url) => url.replace(/^https?:\/\//, '').replace(/\/$/, '');
     // body
     const by = hipY - 50 + bob;
     ctx.fillStyle = b.color; rr(-28, by, 56, 54, 16); ctx.fill();
-    ctx.fillStyle = 'rgba(255,255,255,.1)'; rr(-17, by + 12, 34, 20, 6); ctx.fill();
-    ctx.save(); ctx.scale(b.face, 1); ctx.fillStyle = 'rgba(255,255,255,.85)';
-    ctx.font = '600 11px "JetBrains Mono", monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(b.num, 0, by + 22.5); ctx.restore();
     // arms swing against the kicking leg
     [[-30, 1], [30, -1]].forEach(([ax, s]) => {
       ctx.save(); ctx.translate(ax * .93, by + 12); ctx.rotate(leg * .55 * s + Math.sin(time * 5 + i) * .05);
