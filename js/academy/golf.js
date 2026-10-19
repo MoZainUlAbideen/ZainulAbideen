@@ -88,14 +88,14 @@ export function mount(root, { onDone }) {
     function draw() {
       ctx.clearRect(0, 0, W, H);
       // grid
-      ctx.strokeStyle = 'rgba(160,190,255,.08)'; ctx.lineWidth = 1;
+      ctx.strokeStyle = 'rgba(21,19,19,.06)'; ctx.lineWidth = 1;
       for (let i = 0; i <= 10; i++) { const x = M + i * (W - 2 * M) / 10; ctx.beginPath(); ctx.moveTo(x, M); ctx.lineTo(x, H - M); ctx.stroke(); }
       // fill under curve
       ctx.beginPath(); ctx.moveTo(sx(x0r), H - M);
       for (let i = 0; i <= 400; i++) { const x = x0r + (x1r - x0r) * i / 400; ctx.lineTo(sx(x), sy(h.f(x))); }
       ctx.lineTo(sx(x1r), H - M); ctx.closePath();
       const grad = ctx.createLinearGradient(0, M, 0, H);
-      grad.addColorStop(0, 'rgba(52,211,153,.22)'); grad.addColorStop(1, 'rgba(52,211,153,0)');
+      grad.addColorStop(0, 'rgba(15,122,90,.14)'); grad.addColorStop(1, 'rgba(15,122,90,0)');
       ctx.fillStyle = grad; ctx.fill();
       // curve
       ctx.beginPath();
@@ -103,23 +103,23 @@ export function mount(root, { onDone }) {
       ctx.strokeStyle = accent; ctx.lineWidth = 3; ctx.stroke();
       // hole + flag at the global minimum
       const hx = sx(h.xs), hy = sy(h.f(h.xs));
-      ctx.fillStyle = '#05070f'; ctx.beginPath(); ctx.ellipse(hx, hy + 2, 12, 4, 0, 0, Math.PI * 2); ctx.fill();
-      ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(hx, hy - 46); ctx.stroke();
+      ctx.fillStyle = '#151313'; ctx.beginPath(); ctx.ellipse(hx, hy + 2, 12, 4, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#151313'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(hx, hy - 46); ctx.stroke();
       ctx.fillStyle = '#ff4fa8'; ctx.beginPath(); ctx.moveTo(hx, hy - 46); ctx.lineTo(hx + 22, hy - 39); ctx.lineTo(hx, hy - 32); ctx.fill();
       // trail
       for (let i = 0; i < shown - 1; i++) {
         const a = path[i], b = path[i + 1];
         if (!Number.isFinite(b)) break;
-        ctx.strokeStyle = 'rgba(255,255,255,.25)'; ctx.setLineDash([4, 5]); ctx.lineWidth = 1.5;
+        ctx.strokeStyle = 'rgba(21,19,19,.3)'; ctx.setLineDash([4, 5]); ctx.lineWidth = 1.5;
         ctx.beginPath(); ctx.moveTo(sx(a), sy(h.f(a)) - 9); ctx.lineTo(sx(Math.max(x0r, Math.min(x1r, b))), sy(h.f(b)) - 9); ctx.stroke();
         ctx.setLineDash([]);
-        ctx.fillStyle = 'rgba(255,255,255,.35)'; ctx.beginPath(); ctx.arc(sx(a), sy(h.f(a)) - 9, 2.5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = 'rgba(21,19,19,.35)'; ctx.beginPath(); ctx.arc(sx(a), sy(h.f(a)) - 9, 2.5, 0, Math.PI * 2); ctx.fill();
       }
       // ball
       const bx = path[shown - 1];
       if (Number.isFinite(bx) && bx >= x0r - 1 && bx <= x1r + 1) {
-        ctx.fillStyle = '#fff'; ctx.shadowColor = accent; ctx.shadowBlur = 16;
-        ctx.beginPath(); ctx.arc(sx(Math.max(x0r, Math.min(x1r, bx))), sy(h.f(bx)) - 9, 9, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#fff'; ctx.strokeStyle = '#151313'; ctx.lineWidth = 2; ctx.shadowColor = 'rgba(21,19,19,.35)'; ctx.shadowBlur = 10;
+        ctx.beginPath(); ctx.arc(sx(Math.max(x0r, Math.min(x1r, bx))), sy(h.f(bx)) - 9, 9, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0; ctx.stroke();
         ctx.shadowBlur = 0;
       }
       const x = path[shown - 1];

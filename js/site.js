@@ -13,7 +13,7 @@ const h = (tag, attrs = {}, ...kids) => {
     if (v == null || v === false) continue;
     if (k === 'class') e.className = v; else if (k === 'html') e.innerHTML = v; else e.setAttribute(k, v === true ? '' : v);
   }
-  for (const k of kids.flat()) if (k != null && k !== false) e.append(k);
+  for (const k of kids.flat(Infinity)) if (k != null && k !== false) e.append(k);
   return e;
 };
 const ext = { target: '_blank', rel: 'noopener' };
@@ -95,51 +95,85 @@ const host = (url) => url.replace(/^https?:\/\//, '').replace(/\/$/, '');
   requestAnimationFrame(grain);
 })();
 
-// ───────── projects: stacking cards ─────────
+// ───────── projects ─────────
+// Desktop: the section pins to the screen; scrolling plays the projects one
+// by one (copy swaps on the left, screenshots slide up and stack on the right)
+// and the page only moves on after the last one. Phones: plain cards.
 (function projects() {
-  const root = $('#projects');
-  PROJECTS.forEach((p, i) => {
-    const metric = p.metric ? [
-      h('p', { class: 'metric' }, p.metric.from ? [h('s', {}, p.metric.from), h('i', { 'aria-hidden': 'true' }, '→')] : null, h('b', {}, p.metric.to)),
-      h('p', { class: 'metric__label' }, p.metric.label),
-    ] : null;
-    const links = [];
-    if (p.live) links.push(h('a', { href: p.live, ...ext }, 'Live ', h('span', { 'aria-hidden': 'true' }, '↗')));
-    if (p.repo) links.push(h('a', { href: p.repo, ...ext }, 'GitHub ', h('span', { 'aria-hidden': 'true' }, '↗')));
-    const visual = p.shot
-      ? h('a', { class: 'shot', href: p.live, ...ext, 'aria-label': `Open ${p.name}` },
-          h('div', { class: 'shot__bar' }, h('i'), h('i'), h('i'), h('span', {}, host(p.live))),
-          h('img', { src: p.shot, alt: `${p.name} home page`, loading: 'lazy', width: 800, height: 506 }))
-      : h('ol', { class: 'pipe', 'aria-label': `${p.name} pipeline` }, p.pipeline.map((s, k) => h('li', {}, h('span', {}, `STEP ${k + 1}`), s)));
-    root.append(h('article', { class: 'pcard', style: `--i:${i}` },
-      h('div', { class: 'pcard__copy' },
-        h('p', { class: 'pcard__top' }, h('span', {}, String(i + 1).padStart(2, '0') + ' · ' + p.kind), p.live ? h('span', {}, 'Live') : h('span', {}, 'Open source')),
-        h('h3', { class: 'pcard__name' }, p.name),
-        h('p', { class: 'pcard__tag' }, p.tagline),
-        metric,
-        h('ul', { class: 'pcard__points' }, p.points.map((t) => h('li', {}, t))),
-        h('div', { class: 'pcard__foot' }, h('ul', { class: 'tags' }, p.tech.map((t) => h('li', {}, t))), h('div', { class: 'pcard__links' }, links)),
-      ),
-      h('div', { class: `pcard__visual tint-${p.tint}` }, visual),
-    ));
+  const metricEl = (p) => p.metric ? [
+    h('p', { class: 'metric' }, p.metric.from ? [h('s', {}, p.metric.from), h('i', { 'aria-hidden': 'true' }, '→')] : null, h('b', {}, p.metric.to)),
+    h('p', { class: 'metric__label' }, p.metric.label),
+  ] : null;
+  const linksEl = (p) => {
+    const l = [];
+    if (p.live) l.push(h('a', { href: p.live, ...ext }, 'Live ', h('span', { 'aria-hidden': 'true' }, '↗')));
+    if (p.repo) l.push(h('a', { href: p.repo, ...ext }, 'GitHub ', h('span', { 'aria-hidden': 'true' }, '↗')));
+    return h('div', { class: 'pcard__links' }, l);
+  };
+  const visualEl = (p) => p.shot
+    ? h('a', { class: 'shot', href: p.live, ...ext, 'aria-label': `Open ${p.name}` },
+        h('div', { class: 'shot__bar' }, h('i'), h('i'), h('i'), h('span', {}, host(p.live))),
+        h('img', { src: p.shot, alt: `${p.name} home page`, loading: 'lazy', width: 800, height: 506 }))
+    : h('ol', { class: 'pipe', 'aria-label': `${p.name} pipeline` }, p.pipeline.map((s, k) => h('li', {}, h('span', {}, `STEP ${k + 1}`), s)));
+  const copyEl = (p, i) => [
+    h('p', { class: 'pcard__top' }, h('span', {}, String(i + 1).padStart(2, '0') + ' · ' + p.kind), h('span', {}, p.live ? 'Live' : 'Open source')),
+    h('h3', { class: 'pcard__name' }, p.name),
+    h('p', { class: 'pcard__tag' }, p.tagline),
+    metricEl(p),
+    h('ul', { class: 'pcard__points' }, p.points.map((t) => h('li', {}, t))),
+    h('div', { class: 'pcard__foot' }, h('ul', { class: 'tags' }, p.tech.map((t) => h('li', {}, t))), linksEl(p)),
+  ];
+
+  // plain cards (phones / short screens)
+  const list = $('#projects');
+  PROJECTS.forEach((p, i) => list.append(h('article', { class: 'pcard' },
+    h('div', { class: 'pcard__copy' }, copyEl(p, i)),
+    h('div', { class: `pcard__visual tint-${p.tint}` }, visualEl(p)))));
+
+  // pinned player (desktop)
+  const N = PROJECTS.length;
+  const pin = $('#pin'), copyBox = $('#pin-copy'), visBox = $('#pin-visuals'), nav = $('#pin-nav');
+  pin.style.setProperty('--n', N);
+  const copies = PROJECTS.map((p, i) => { const c = h('article', { class: 'pin__item', 'aria-hidden': String(i !== 0) }, copyEl(p, i)); copyBox.append(c); return c; });
+  const cards = PROJECTS.map((p, i) => { const v = h('div', { class: `pin__card tint-${p.tint}` }, visualEl(p)); visBox.append(v); return v; });
+  const dots = PROJECTS.map((p, i) => {
+    const b = h('button', { type: 'button' }, h('span', {}, String(i + 1).padStart(2, '0')), p.name);
+    b.addEventListener('click', () => {
+      const r = pin.getBoundingClientRect(), span = pin.offsetHeight - innerHeight;
+      scrollTo({ top: scrollY + r.top + span * (i / (N - 1)) + 2, behavior: reduced ? 'auto' : 'smooth' });
+    });
+    nav.append(h('li', {}, b));
+    return b;
   });
 
-  // cards underneath shrink a touch as the next one slides over them
-  if (reduced) return;
-  const cards = [...root.children];
-  const onScroll = () => {
-    if (innerWidth <= 900 || innerHeight <= 760) { cards.forEach((c) => { c.style.transform = ''; c.style.filter = ''; }); return; }
-    cards.forEach((c, i) => {
-      const next = cards[i + 1];
-      if (!next) return;
-      const a = c.getBoundingClientRect(), b = next.getBoundingClientRect();
-      const overlap = Math.max(0, Math.min(1, (a.bottom - b.top) / a.height));
-      c.style.transform = `scale(${1 - overlap * 0.05})`;
-      c.style.filter = overlap > 0.02 ? `brightness(${1 - overlap * 0.12})` : '';
+  const ease = (x) => x * x * (3 - 2 * x);
+  let active = -1;
+  const update = () => {
+    if (getComputedStyle(pin).display === 'none') return;
+    const r = pin.getBoundingClientRect(), span = pin.offsetHeight - innerHeight;
+    const prog = Math.min(1, Math.max(0, -r.top / span));
+    const t = prog * (N - 1);                       // 0 … N-1
+    cards.forEach((c, k) => {
+      // card k slides up from below during the half-step before it becomes active
+      const enter = k === 0 ? 1 : ease(Math.min(1, Math.max(0, (t - (k - 1) - 0.3) / 0.55)));
+      const covered = Math.min(1, Math.max(0, t - k));   // how far the next card has come over it
+      const y = (1 - enter) * 104;
+      const s = 1 - Math.min(covered, 1) * 0.06;
+      c.style.transform = `translate3d(0, ${y}%, 0) scale(${s})`;
+      c.style.filter = covered > 0.02 ? `brightness(${1 - covered * 0.15})` : '';
+      c.style.zIndex = String(k + 1);
     });
+    const now = Math.min(N - 1, Math.round(t));
+    if (now !== active) {
+      active = now;
+      copies.forEach((c, k) => { c.classList.toggle('is-on', k === now); c.setAttribute('aria-hidden', String(k !== now)); });
+      dots.forEach((d, k) => d.classList.toggle('is-on', k === now));
+    }
+    nav.style.setProperty('--prog', String(prog));
   };
-  addEventListener('scroll', onScroll, { passive: true });
-  addEventListener('resize', onScroll);
+  addEventListener('scroll', update, { passive: true });
+  addEventListener('resize', update);
+  update();
 })();
 
 // ───────── experience, stack, certifications ─────────

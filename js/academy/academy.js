@@ -13,7 +13,7 @@ import * as confidence from './confidence.js';
 
 const PATHS = [
   {
-    id: 'halluc', game: hallucination, icon: ICONS.search, color: '#ff4fa8',
+    id: 'halluc', game: hallucination, icon: ICONS.search, color: '#c4246f',
     tag: 'Evaluation', title: 'Hallucination Hunt', cta: 'Start the hunt',
     blurb: 'Read the sources, then catch every sentence the AI made up.',
     lead: 'An AI answer can sound perfect and still be wrong. You get the question, the documents the AI was given, and its answer. Your job is to catch the claims the documents don’t back up.',
@@ -22,7 +22,7 @@ const PATHS = [
     lesson: 'You just did what an evaluation harness does: compare every claim against the evidence. I automate exactly this in EdgarIQ, where a checker verifies every number against the filing, and in Rehnuma, where a critic rejects answers without a citation.',
   },
   {
-    id: 'retrieval', game: retrieval, icon: ICONS.stack, color: '#38bdf8',
+    id: 'retrieval', game: retrieval, icon: ICONS.stack, color: '#0a6fb0',
     tag: 'RAG', title: 'Retrieval Relay', cta: 'Open the archive',
     blurb: 'Choose what the model reads, and watch the answer change.',
     lead: 'A RAG system can only be as good as what it retrieves. You pick up to three document chunks for the model to read, then see whether it answers correctly, gets confused, or makes something up.',
@@ -31,7 +31,7 @@ const PATHS = [
     lesson: 'Look-alike chunks are the silent killer of RAG: same words, wrong quarter. In EdgarIQ, adding a metadata filter on the filing date was the single change that took the golden-set score from 29% to 100%.',
   },
   {
-    id: 'pitcrew', game: pitcrew, icon: ICONS.wrench, color: '#ffb020',
+    id: 'pitcrew', game: pitcrew, icon: ICONS.wrench, color: '#b25a05',
     tag: 'Agents', title: 'Agent Pit Crew', cta: 'Enter the pit lane',
     blurb: 'Line up the tools so the agent actually finishes the job.',
     lead: 'An AI agent isn’t one magic prompt. It’s a pipeline of tools, where each one needs something the previous one produced. Build the pit stop, hit Run, and see where it breaks.',
@@ -40,7 +40,7 @@ const PATHS = [
     lesson: 'Good agents are mostly plumbing: the right steps, in the right order, with a check at the end. The three missions you ran are simplified versions of the real pipelines behind Rehnuma, EdgarIQ and Parity.',
   },
   {
-    id: 'golf', game: golf, icon: ICONS.flag, color: '#34d399',
+    id: 'golf', game: golf, icon: ICONS.flag, color: '#0f7a5a',
     tag: 'ML basics', title: 'Learning-Rate Golf', cta: 'Tee off',
     blurb: 'Tune one number and roll the ball into the valley.',
     lead: 'Training a model is a ball rolling downhill on a loss curve. The learning rate decides how big each step is. Too small and it crawls, too big and it flies off. This is real gradient descent, running live.',
@@ -49,7 +49,7 @@ const PATHS = [
     lesson: 'Every model I train starts with this exact tension: step size versus stability. Momentum is how optimisers like Adam roll past small bumps instead of getting stuck in them.',
   },
   {
-    id: 'earshot', game: quotecheck, icon: ICONS.wave, color: '#a78bfa',
+    id: 'earshot', game: quotecheck, icon: ICONS.wave, color: '#6a46d6',
     tag: 'Speech + RAG', title: 'Timestamp Detective', cta: 'Press play',
     blurb: 'Check every quote an AI pulled from a podcast, down to the second.',
     lead: 'An answer that cites a podcast is only useful if the quote was really said, and said at that moment. You get the transcript with word-level timestamps and an AI answer full of citations. Play the quote checker.',
@@ -58,7 +58,7 @@ const PATHS = [
     lesson: 'This is Earshot’s quote checker. Plain code confirms every quote appears word for word in the Whisper transcript, then checks its timestamp. A single repair pass fixes citations instead of discarding them, which raised answered questions from 77.8% to 93.3% and correctly timed citations from 62.2% to 80.0%.',
   },
   {
-    id: 'dehqan', game: confidence, icon: ICONS.leaf, color: '#a3e635',
+    id: 'dehqan', game: confidence, icon: ICONS.leaf, color: '#4f7d10',
     tag: 'Computer vision', title: 'Confidence Call', cta: 'Open the field kit',
     blurb: 'Decide when a crop-disease model should answer, and when it should stay quiet.',
     lead: 'A model that is wrong with confidence is worse than one that says “I’m not sure”. Each batch shows a leaf-disease model’s predictions on a confidence scale. Set the bar it must clear before it is allowed to answer a farmer.',

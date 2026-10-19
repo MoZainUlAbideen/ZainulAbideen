@@ -1,13 +1,16 @@
-/* Variables the game styles expect (they were global in the arena site) */
+/* The games use these variables; here they follow the site's paper theme */
 .academy {
-  --ink: #eef2ff; --ink-soft: #a9b3d6; --line: rgba(160, 190, 255, .22);
-  --font-display: "Chakra Petch", "Arial Black", system-ui, sans-serif;
-  --font-body: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --ink: #151313; --ink-2: #4a4542; --ink-soft: #6f6863;
+  --line: rgba(21, 19, 19, .12); --line-2: rgba(21, 19, 19, .18);
+  --font-title: "Hedvig Letters Serif", Georgia, serif;
+  --font-display: "Mona Sans", system-ui, sans-serif;   /* small uppercase labels */
+  --font-body: "Mona Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   font-family: var(--font-body); color: var(--ink); line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  z-index: 200;
 }
 .academy *, .academy *::before, .academy *::after { box-sizing: border-box; }
 .academy button { font-family: inherit; }
-.academy kbd { font: 700 12px/1 var(--font-display); }
-/* above the site's nav, and fully opaque over the page */
-.academy { z-index: 200; background-color: #05070f; }
+.academy kbd { font: 600 12px/1 var(--font-body); }
+.academy .ac-kicker, .academy .ag-chip, .academy .ac-card__tag, .academy .ac-built span, .academy .ac-results__h { font-weight: 650; }
+.academy .ac-steps { font-family: "JetBrains Mono", ui-monospace, monospace; }
