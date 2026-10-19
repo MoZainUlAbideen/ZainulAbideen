@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────
-//  Page behaviour: boot sequence, live portrait, project cards,
+//  Page behaviour: boot sequence, contribution snake, custom cursor, project cards,
 //  sections from data.js, scroll reveals, and the My Academy games.
 // ─────────────────────────────────────────────────────────────
 import { PROJECTS, EXPERIENCE, STACK, CERTS, BEYOND } from './data.js';
@@ -50,49 +50,129 @@ const host = (url) => url.replace(/^https?:\/\//, '').replace(/\/$/, '');
   addEventListener('keydown', finish, { once: true });
 })();
 
-// ───────── live portrait ─────────
-(function portrait() {
-  const fig = $('#portrait'), card = $('.portrait__card'), img = $('.portrait__img');
-  // Islamabad clock
-  const time = $('#pk-time');
-  const clock = () => { time.textContent = `Islamabad ${new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Karachi' }).format(new Date())}`; };
-  clock(); setInterval(clock, 20000);
-  if (reduced) return;
-
-  // tilt + glare + parallax follow the pointer
-  const fine = matchMedia('(hover: hover) and (pointer: fine)').matches;
-  if (fine) {
-    fig.addEventListener('pointermove', (e) => {
-      const r = card.getBoundingClientRect();
-      const x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
-      card.style.setProperty('--ry', `${(x - .5) * 10}deg`);
-      card.style.setProperty('--rx', `${(.5 - y) * 8}deg`);
-      card.style.setProperty('--gx', `${x * 100}%`);
-      card.style.setProperty('--gy', `${y * 100}%`);
-      card.style.setProperty('--glare', '1');
-      img.style.setProperty('--px', `${(x - .5) * -10}px`);
-      img.style.setProperty('--py', `${(y - .5) * -6}px`);
-    });
-    fig.addEventListener('pointerleave', () => {
-      ['--rx', '--ry', '--glare'].forEach((p) => card.style.removeProperty(p));
-      img.style.removeProperty('--px'); img.style.removeProperty('--py');
-    });
-  }
-
-  // film grain that keeps the dithered photo "breathing"; paused off-screen
-  const cv = $('.portrait__grain'), ctx = cv.getContext('2d');
-  const W = 180, H = 225; cv.width = W; cv.height = H;
-  const frame = ctx.createImageData(W, H);
-  let on = true, last = 0;
-  new IntersectionObserver(([e]) => { on = e.isIntersecting; }).observe(card);
-  const grain = (t) => {
-    requestAnimationFrame(grain);
-    if (!on || t - last < 80) return; last = t;
-    const d = frame.data;
-    for (let i = 0; i < d.length; i += 4) { const v = Math.random() * 255 | 0; d[i] = d[i + 1] = d[i + 2] = v; d[i + 3] = 255; }
-    ctx.putImageData(frame, 0, 0);
+// ───────── hero: contribution graph with a snake eating its way through ─────────
+// Not interactive. The snake path-finds (BFS) to the nearest commit, eats it,
+// and when the board is clear a fresh year of commits fades back in.
+(function snake() {
+  const cv = $('#snake'); if (!cv) return;
+  const ctx = cv.getContext('2d');
+  const LEVELS = ['#ebe6e1', '#c3dfcc', '#86bf9b', '#3f8f63', '#23473a'];
+  const ROWS = 7;
+  let cols = 0, cell = 0, gap = 0, dpr = 1, grid = [], fade = [], body = [], path = [], last = 0, stepMs = 120, prog = 0, wait = 0;
+  const rnd = (() => { let x = 20260619; return () => ((x = (x * 1103515245 + 12345) % 2147483648) / 2147483648); })();
+  const fill = () => {
+    grid = Array.from({ length: ROWS * cols }, () => { const r = rnd(); return r < .38 ? 0 : r < .62 ? 1 : r < .8 ? 2 : r < .93 ? 3 : 4; });
+    fade = grid.map(() => 0);
   };
-  requestAnimationFrame(grain);
+  const layout = () => {
+    const w = cv.parentElement.clientWidth;
+    gap = w < 420 ? 3 : 4;
+    cell = w < 420 ? 13 : w < 560 ? 19 : 22;
+    cols = Math.max(12, Math.floor((w + gap) / (cell + gap)));
+    cell = (w - gap * (cols - 1)) / cols;                // stretch to the exact width
+    const hgt = ROWS * cell + (ROWS - 1) * gap;
+    dpr = Math.min(2, devicePixelRatio || 1);
+    cv.width = Math.round(w * dpr); cv.height = Math.round(hgt * dpr);
+    cv.style.width = w + 'px'; cv.style.height = hgt + 'px';
+    fill();
+    const r = 3; body = Array.from({ length: 6 }, (_, k) => ({ c: 5 - k, r })); path = [];
+  };
+  const idx = (c, r) => r * cols + c;
+  const free = (c, r) => c >= 0 && r >= 0 && c < cols && r < ROWS && !body.slice(0, -1).some((b) => b.c === c && b.r === r);
+  const plan = () => {
+    const h = body[0], seen = new Map([[idx(h.c, h.r), null]]), q = [h];
+    while (q.length) {
+      const p = q.shift();
+      if ((p !== h) && grid[idx(p.c, p.r)] > 0) { const out = []; let k = idx(p.c, p.r); while (k !== idx(h.c, h.r)) { out.unshift({ c: k % cols, r: (k / cols) | 0 }); k = seen.get(k); } return out; }
+      for (const [dc, dr] of [[1, 0], [0, 1], [-1, 0], [0, -1]]) {
+        const n = { c: p.c + dc, r: p.r + dr }, k = idx(n.c, n.r);
+        if (free(n.c, n.r) && !seen.has(k)) { seen.set(k, idx(p.c, p.r)); q.push(n); }
+      }
+    }
+    return [];
+  };
+  const step = () => {
+    if (wait > 0) { wait--; return; }
+    if (!path.length) path = plan();
+    if (!path.length) {                                  // board cleared: new commits fade in
+      if (grid.every((v) => v === 0)) { fill(); fade = grid.map(() => 1); wait = 4; }
+      return;
+    }
+    const n = path.shift();
+    body.unshift(n); body.pop();
+    const k = idx(n.c, n.r);
+    if (grid[k] > 0) { grid[k] = 0; if (body.length < 11) body.push({ ...body[body.length - 1] }); }
+  };
+  const rr = (x, y, w, hh, r) => { ctx.beginPath(); ctx.roundRect(x, y, w, hh, r); ctx.fill(); };
+  const draw = () => {
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    const rad = Math.max(2, cell * .2);
+    for (let r = 0; r < ROWS; r++) for (let c = 0; c < cols; c++) {
+      const k = idx(c, r), f = fade[k];
+      ctx.fillStyle = LEVELS[0]; rr(c * (cell + gap), r * (cell + gap), cell, cell, rad);
+      if (grid[k] > 0) { ctx.globalAlpha = 1 - f; ctx.fillStyle = LEVELS[grid[k]]; rr(c * (cell + gap), r * (cell + gap), cell, cell, rad); ctx.globalAlpha = 1; }
+      if (f > 0) fade[k] = Math.max(0, f - .03 - (c / cols) * .01);
+    }
+    // the snake: one thick rounded line through the segment centres; the head
+    // and tail glide between cells so the motion is continuous
+    const C = (q) => ({ x: q.c * (cell + gap) + cell / 2, y: q.r * (cell + gap) + cell / 2 });
+    const lerp = (p, q, t) => ({ x: p.x + (q.x - p.x) * t, y: p.y + (q.y - p.y) * t });
+    const n = body.length, pts = [lerp(C(body[1]), C(body[0]), prog)];
+    for (let i = 1; i < n - 1; i++) pts.push(C(body[i]));
+    pts.push(lerp(C(body[n - 1]), C(body[n - 2]), prog));
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.strokeStyle = 'rgba(21,19,19,.14)'; ctx.lineWidth = cell * .78;
+    ctx.beginPath(); pts.forEach((q, i) => (i ? ctx.lineTo(q.x, q.y + 2) : ctx.moveTo(q.x, q.y + 2))); ctx.stroke();
+    ctx.strokeStyle = '#151313'; ctx.lineWidth = cell * .66;
+    ctx.beginPath(); pts.forEach((q, i) => (i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y))); ctx.stroke();
+    const hd = pts[0], nx = pts[1], ang = Math.atan2(hd.y - nx.y, hd.x - nx.x);
+    ctx.fillStyle = '#151313'; ctx.beginPath(); ctx.arc(hd.x, hd.y, cell * .42, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#fffdfc';
+    for (const side of [-1, 1]) {
+      const ex = hd.x + Math.cos(ang) * cell * .14 + Math.cos(ang + side * Math.PI / 2) * cell * .17;
+      const ey = hd.y + Math.sin(ang) * cell * .14 + Math.sin(ang + side * Math.PI / 2) * cell * .17;
+      ctx.beginPath(); ctx.arc(ex, ey, Math.max(1.2, cell * .075), 0, Math.PI * 2); ctx.fill();
+    }
+  };
+  let on = true;
+  new IntersectionObserver(([e]) => { on = e.isIntersecting; }).observe(cv);
+  const loop = (t) => {
+    requestAnimationFrame(loop);
+    if (!on) { last = t; return; }
+    if (!last) last = t;
+    prog += (t - last) / stepMs; last = t;
+    while (prog >= 1) { prog -= 1; step(); }
+    draw();
+  };
+  layout(); draw();
+  let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { layout(); draw(); }, 150); });
+  if (!reduced) requestAnimationFrame(loop);
+})();
+
+// ───────── custom cursor: a crosshair that opens into a ring over anything clickable ─────────
+(function cursor() {
+  if (!matchMedia('(hover: hover) and (pointer: fine)').matches || reduced) return;
+  const dot = h('div', { class: 'cur', 'aria-hidden': 'true' }), ring = h('div', { class: 'cur-ring', 'aria-hidden': 'true' });
+  document.body.append(ring, dot);
+  document.documentElement.classList.add('has-cur', 'cur-out');
+  let x = -100, y = -100, rx = -100, ry = -100;
+  addEventListener('pointermove', (e) => {
+    x = e.clientX; y = e.clientY;
+    dot.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+    const hot = e.target.closest?.('a, button, [role="tab"], input, label, summary, .ac-card, video');
+    document.documentElement.classList.toggle('cur-hot', !!hot);
+    document.documentElement.classList.remove('cur-out');
+  }, { passive: true });
+  addEventListener('pointerdown', () => document.documentElement.classList.add('cur-down'));
+  addEventListener('pointerup', () => document.documentElement.classList.remove('cur-down'));
+  document.addEventListener('pointerleave', () => document.documentElement.classList.add('cur-out'));
+  const follow = () => {
+    rx += (x - rx) * .2; ry += (y - ry) * .2;
+    ring.style.transform = `translate3d(${rx}px, ${ry}px, 0)`;
+    requestAnimationFrame(follow);
+  };
+  requestAnimationFrame(follow);
 })();
 
 // ───────── projects ─────────
@@ -184,7 +264,9 @@ const host = (url) => url.replace(/^https?:\/\//, '').replace(/\/$/, '');
 
 // ───────── experience, stack, certifications ─────────
 $('#timeline').append(...EXPERIENCE.map((x) => h('li', { class: 'tl reveal' },
-  h('p', { class: 'tl__when' }, x.when),
+  h('div', { class: 'tl__side' },
+    x.logo ? h('img', { class: 'tl__logo', src: x.logo, alt: `${x.org} logo`, width: 56, height: 56, loading: 'lazy' }) : null,
+    h('p', { class: 'tl__when' }, x.when)),
   h('div', {},
     h('h3', { class: 'tl__role' }, x.role),
     h('p', { class: 'tl__org' }, x.href ? h('a', { href: x.href, ...ext }, x.org) : x.org, ` · ${x.where}`),

@@ -61,8 +61,8 @@
     <section class="hero">
       <div class="hero__copy">
         <p class="eyebrow"><span class="dot"></span>AI Engineer · Islamabad, Pakistan</p>
-        <h1 class="hero__h">I build AI that <em>shows its&nbsp;work.</em></h1>
-        <p class="hero__sub">I’m Muhammad Zain-ul-Abideen. I ship measured ML and LLM systems end to end: speech search, computer vision, RAG and agents. Every project is live, benchmarked against baselines on held-out data, and publishes its failure cases alongside its wins.</p>
+        <h1 class="hero__h">I build reliable, scalable <em>AI&nbsp;systems.</em></h1>
+        <p class="hero__sub">I’m Muhammad Zain ul Abideen, an AI engineer who takes ML and LLM products from prototype to production: retrieval, agents, computer vision and speech. Everything I ship is tested, benchmarked against a baseline and running live.</p>
         <div class="hero__ctas">
           <a class="btn btn--dark" href="#work">See the work</a>
           <a class="btn btn--ghost" href="#academy">Play My Academy</a>
@@ -74,15 +74,17 @@
         </ul>
       </div>
 
-      <figure class="portrait" id="portrait">
-        <div class="portrait__card">
-          <canvas class="portrait__grain" aria-hidden="true"></canvas>
-          <div class="portrait__halo" aria-hidden="true"></div>
-          <img class="portrait__img" src="assets/img/zain.png" alt="Muhammad Zain-ul-Abideen" width="466" height="520">
-          <div class="portrait__scan" aria-hidden="true"></div>
-          <div class="portrait__glare" aria-hidden="true"></div>
-          <p class="portrait__live"><span></span>Live · <time id="pk-time">Islamabad</time></p>
-          <p class="portrait__tag">BEng Electrical · NUST CEME '26</p>
+      <figure class="contrib" aria-label="An animated contribution graph: a snake works its way through the commits">
+        <div class="contrib__head">
+          <p class="contrib__title"><span class="contrib__dot"></span>Commit history</p>
+          <p class="contrib__sub">main · shipping daily</p>
+        </div>
+        <div class="contrib__board">
+          <canvas id="snake" aria-hidden="true"></canvas>
+        </div>
+        <div class="contrib__foot">
+          <span>Last 12 months</span>
+          <span class="contrib__legend">Less <i></i><i></i><i></i><i></i><i></i> More</span>
         </div>
       </figure>
     </section>
@@ -112,7 +114,7 @@
       <header class="work__head reveal">
         <p class="eyebrow">Selected work</p>
         <h2 class="h2">My models can talk.<br>I put them to work.</h2>
-        <p class="lede">Five live products and one tool, each measured against a baseline. The number on each card is the result I’m proudest of, and the write-ups say where they still fall short.</p>
+        <p class="lede">Six live products, each measured against a baseline. The number on each card is the result I’m proudest of, and the write-ups say where they still fall short.</p>
       </header>
       <!-- desktop: the section pins and the projects play through as you scroll -->
       <div class="pin" id="pin">
@@ -154,7 +156,7 @@
           <img src="assets/life/nust-ceme.png" alt="NUST College of Electrical & Mechanical Engineering logo" width="64" height="64" loading="lazy">
           <div>
             <h3>Bachelor of Electrical Engineering</h3>
-            <p>National University of Sciences and Technology (NUST), College of E&amp;ME · Islamabad · Sep 2022 – Jun 2026</p>
+            <p>National University of Sciences and Technology (NUST), College of E&amp;ME (CEME) · Rawalpindi · Sep 2022 – Jun 2026</p>
           </div>
         </article>
         <ul class="certs" id="certs"></ul>
@@ -192,9 +194,12 @@
         <a href="mailto:mu.zainulabideen@gmail.com">mu.zainulabideen@gmail.com <span aria-hidden="true">↗</span></a>
         <p>Islamabad, Pakistan</p>
       </div>
+      <figure class="foot__me">
+        <img src="assets/img/zain-card.png" alt="Muhammad Zain ul Abideen" width="480" height="601" loading="lazy">
+      </figure>
     </div>
-    <p class="foot__mark" aria-hidden="true">ZAIN-UL-ABIDEEN</p>
-    <p class="foot__small">© <span id="year">2026</span> Muhammad Zain-ul-Abideen</p>
+    <p class="foot__mark" aria-hidden="true"><span>Muhammad Zain ul Abideen</span></p>
+    <p class="foot__small">© <span id="year">2026</span> Muhammad Zain ul Abideen</p>
   </footer>
 
   <script type="module" src="js/site.js"></script>

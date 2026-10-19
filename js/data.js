@@ -95,6 +95,8 @@ export const PROJECTS = [
       'Fit score, gap analysis and grounded rewrite suggestions; auto-tailors a resume for jobs above 50% fit.',
     ],
     tech: ['FastAPI', 'Groq', 'FAISS', 'Chrome MV3'],
+    live: 'https://job-assistant-an-ai-resume-fit-dash.vercel.app/',
+    shot: 'assets/projects/job-assistant.jpg',
     repo: `${GH}/Job-Assistant-An-AI-Resume-Fit-Dashboard-Built-From-Scratch-FastAPI-Groq-RAG`,
     pipeline: ['Job listing', 'Embeddings + FAISS', 'Fit score & gaps', 'Tailored resume'],
     tint: 'stone',
@@ -103,7 +105,7 @@ export const PROJECTS = [
 
 export const EXPERIENCE = [
   {
-    role: 'Machine Learning Engineer Intern', org: 'RISETech', where: 'Islamabad, Pakistan', when: 'Jun – Aug 2025',
+    role: 'Machine Learning Engineer Intern', org: 'RISETech', logo: 'assets/logos/risetech.png', where: 'Islamabad, Pakistan', when: 'Jun – Aug 2025',
     points: [
       'Led feature extraction for a multi-sensor (vibration, magnetic, acoustic) vehicle classifier sorting passing traffic into LTV, HTV and no vehicle.',
       'Trained ensemble models (Random Forest, SVM, KNN, LDA, Extra Trees) that raised accuracy from 71% to 99%.',
@@ -111,17 +113,23 @@ export const EXPERIENCE = [
     ],
   },
   {
-    role: 'AI Engineer Intern', org: 'Software Productivity Strategists (SPS), NSTP', where: 'Islamabad, Pakistan', when: 'Jun – Aug 2024',
+    role: 'AI Engineer Intern', org: 'Software Productivity Strategists (SPS), NSTP', logo: 'assets/logos/sps.png', where: 'Islamabad, Pakistan', when: 'Jun – Aug 2024',
     points: [
       'Developed Python backend features for two flagship products: Business Management System and Cognitive Service Management.',
       'Deployed AI solutions on Microsoft Azure and improved analytics and reporting for a security system.',
     ],
   },
   {
-    role: 'Collaborations Lead', org: 'WWF – Pakistan', where: 'Peshawar · Remote', when: 'Community work',
+    role: 'Collaborations Lead', org: 'WWF – Pakistan', logo: 'assets/logos/wwf.png', where: 'Peshawar · Remote', when: 'Community work',
     href: 'https://www.linkedin.com/in/muhammad-zain-ul-abideen-nust/details/experience/',
     points: [
       'Led the collaborations team supporting WWF’s environmental education initiatives, promoting conservation and sustainable living through community engagement.',
+    ],
+  },
+  {
+    role: 'Volunteer & Event Organizer', org: 'NUST Volunteers Club (NVC)', logo: 'assets/logos/nvc.png', where: 'NUST', when: 'University',
+    points: [
+      'Volunteered and organized numerous events under NVC, from debating competitions, award ceremonies and orientation ceremonies to farewells.',
     ],
   },
 ];
