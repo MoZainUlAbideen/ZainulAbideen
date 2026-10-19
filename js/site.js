@@ -56,7 +56,7 @@ const host = (url) => url.replace(/^https?:\/\//, '').replace(/\/$/, '');
 (function pitch() {
   const cv = $('#pitch'); if (!cv) return;
   const ctx = cv.getContext('2d');
-  const W = 520, H = 290, GY = 236, R = 11;              // logical canvas, ground line, ball radius
+  const W = 520, H = 250, GY = 236, R = 11, OFF = 40;   // logical canvas, ground line, ball radius; OFF trims the empty space above the bots
   const INK = '#1b1919', FOREST = '#23473a', MINT = '#6fdc9f';
   const bots = [
     { x: 118, face: 1, color: INK, num: '01', blinkAt: 1.3, blink: 0, flash: 0 },
@@ -128,25 +128,64 @@ const host = (url) => url.replace(/^https?:\/\//, '').replace(/\/$/, '');
     for (let n = dust.length - 1; n >= 0; n--) { const d = dust[n]; d.life -= dt; d.x += d.vx * dt; d.y += d.vy * dt; d.vy += 90 * dt; if (d.life <= 0) dust.splice(n, 1); }
   };
 
+  // a 3D-looking pitch floating on the page: perspective stripes, a slab edge,
+  // a soft shadow, and goal frames with nets at both ends (no card, no sky)
+  const BY = GY - 40, FY = GY + 34, BL = 60, BR = W - 60, FL = 12, FR = W - 12, SLAB = 9;
+  const at = (u, d) => [BL + (BR - BL) * u + ((FL + (FR - FL) * u) - (BL + (BR - BL) * u)) * d, BY + (FY - BY) * d];
+  const poly = (pts) => { ctx.beginPath(); pts.forEach(([x, y], k) => (k ? ctx.lineTo(x, y) : ctx.moveTo(x, y))); ctx.closePath(); };
+  const drawGoal = (u, out) => {
+    const p1 = at(u, .3), p2 = at(u, .7), h1 = 44, h2 = 50, depth = 18 * out;
+    const b1 = [p1[0] + depth, p1[1] + 3], b2 = [p2[0] + depth * 1.15, p2[1] + 3];
+    // net: back frame + mesh, drawn behind the front posts
+    ctx.fillStyle = 'rgba(255,255,255,.55)';
+    poly([[p1[0], p1[1] - h1], [p2[0], p2[1] - h2], [b2[0], b2[1] - h2 * .78], [b1[0], b1[1] - h1 * .78]]); ctx.fill();
+    poly([[b1[0], b1[1]], [b2[0], b2[1]], [b2[0], b2[1] - h2 * .78], [b1[0], b1[1] - h1 * .78]]); ctx.fill();
+    ctx.strokeStyle = 'rgba(27,25,25,.18)'; ctx.lineWidth = .8;
+    for (let k = 1; k < 6; k++) {
+      const t = k / 6;
+      ctx.beginPath(); ctx.moveTo(b1[0] + (b2[0] - b1[0]) * t, b1[1] + (b2[1] - b1[1]) * t); ctx.lineTo(b1[0] + (b2[0] - b1[0]) * t, b1[1] + (b2[1] - b1[1]) * t - (h1 + (h2 - h1) * t) * .78); ctx.stroke();
+    }
+    for (let k = 1; k < 4; k++) {
+      const t = k / 4;
+      ctx.beginPath(); ctx.moveTo(b1[0], b1[1] - h1 * .78 * t); ctx.lineTo(b2[0], b2[1] - h2 * .78 * t); ctx.stroke();
+    }
+    ctx.strokeStyle = 'rgba(27,25,25,.3)'; ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.moveTo(b1[0], b1[1]); ctx.lineTo(b1[0], b1[1] - h1 * .78); ctx.lineTo(b2[0], b2[1] - h2 * .78); ctx.lineTo(b2[0], b2[1]); ctx.stroke();
+    // front frame: two posts and the crossbar
+    ctx.strokeStyle = '#2b2827'; ctx.lineWidth = 3.4; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.beginPath(); ctx.moveTo(p1[0], p1[1]); ctx.lineTo(p1[0], p1[1] - h1); ctx.lineTo(p2[0], p2[1] - h2); ctx.lineTo(p2[0], p2[1]); ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,255,255,.5)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(p1[0] - .8, p1[1] - 2); ctx.lineTo(p1[0] - .8, p1[1] - h1 + 2); ctx.stroke();
+  };
   const drawPitch = () => {
-    const sky = ctx.createLinearGradient(0, 0, 0, GY);
-    sky.addColorStop(0, '#ffffff'); sky.addColorStop(1, '#f4f1ec');
-    ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
-    // grass band with mowing stripes
-    const top = GY - 16;
-    for (let i = 0; i < 10; i++) { ctx.fillStyle = i % 2 ? '#d5e7d9' : '#e0eee3'; ctx.fillRect(i * W / 10, top, W / 10 + 1, H - top); }
-    ctx.fillStyle = 'rgba(35,71,58,.08)'; ctx.fillRect(0, top, W, 2);
-    // halfway line + spot, faint
-    ctx.strokeStyle = 'rgba(255,255,255,.9)'; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(W / 2, top + 3); ctx.lineTo(W / 2, H); ctx.stroke();
-    ctx.beginPath(); ctx.ellipse(W / 2, GY + 18, 46, 10, 0, 0, Math.PI * 2); ctx.stroke();
-    // little goals behind each bot
-    [[22, 1], [W - 22, -1]].forEach(([gx, d]) => {
-      ctx.strokeStyle = 'rgba(27,25,25,.16)'; ctx.lineWidth = 1;
-      for (let k = 1; k < 5; k++) { ctx.beginPath(); ctx.moveTo(gx, GY - k * 15); ctx.lineTo(gx - d * 14, GY - k * 15 + 4); ctx.stroke(); }
-      ctx.strokeStyle = 'rgba(27,25,25,.35)'; ctx.lineWidth = 3; ctx.lineCap = 'round';
-      ctx.beginPath(); ctx.moveTo(gx, GY); ctx.lineTo(gx, GY - 76); ctx.lineTo(gx - d * 14, GY - 72); ctx.lineTo(gx - d * 14, GY + 2); ctx.stroke();
+    // soft shadow the slab casts on the page
+    const sh = ctx.createRadialGradient(W / 2, FY + SLAB + 4, 10, W / 2, FY + SLAB + 4, W * .5);
+    sh.addColorStop(0, 'rgba(21,19,19,.16)'); sh.addColorStop(1, 'rgba(21,19,19,0)');
+    ctx.fillStyle = sh; ctx.save(); ctx.translate(W / 2, FY + SLAB + 4); ctx.scale(1, .07); ctx.translate(-W / 2, -(FY + SLAB + 4));
+    ctx.beginPath(); ctx.arc(W / 2, FY + SLAB + 4, W * .5, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+    // slab edge (front + the two visible sides)
+    ctx.fillStyle = '#8fb89a'; poly([[FL, FY], [FR, FY], [FR, FY + SLAB], [FL, FY + SLAB]]); ctx.fill();
+    ctx.fillStyle = '#a7c9b0'; poly([[BL, BY], [FL, FY], [FL, FY + SLAB], [BL, BY + SLAB * .6]]); ctx.fill();
+    poly([[BR, BY], [FR, FY], [FR, FY + SLAB], [BR, BY + SLAB * .6]]); ctx.fill();
+    // grass with mowing stripes in perspective
+    for (let i = 0; i < 12; i++) {
+      ctx.fillStyle = i % 2 ? '#cfe4d4' : '#dcecdf';
+      poly([at(i / 12, 0), at((i + 1) / 12, 0), at((i + 1) / 12, 1), at(i / 12, 1)]); ctx.fill();
+    }
+    const fade = ctx.createLinearGradient(0, BY, 0, FY);           // a touch of depth: far side lighter
+    fade.addColorStop(0, 'rgba(255,255,255,.28)'); fade.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = fade; poly([at(0, 0), at(1, 0), at(1, 1), at(0, 1)]); ctx.fill();
+    // markings
+    ctx.strokeStyle = 'rgba(255,255,255,.95)'; ctx.lineWidth = 1.8; ctx.lineJoin = 'round';
+    poly([at(.025, .07), at(.975, .07), at(.975, .93), at(.025, .93)]); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(...at(.5, .07)); ctx.lineTo(...at(.5, .93)); ctx.stroke();
+    const c = at(.5, .5); ctx.beginPath(); ctx.ellipse(c[0], c[1], 46, 11, 0, 0, Math.PI * 2); ctx.stroke();
+    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.ellipse(c[0], c[1], 2.6, 1, 0, 0, Math.PI * 2); ctx.fill();
+    [[.025, 1], [.975, -1]].forEach(([u, dir]) => {                // penalty boxes
+      const a1 = at(u, .3), a2 = at(u, .7), b1 = at(u + dir * .1, .3), b2 = at(u + dir * .1, .7);
+      ctx.beginPath(); ctx.moveTo(...a1); ctx.lineTo(...b1); ctx.lineTo(...b2); ctx.lineTo(...a2); ctx.stroke();
     });
+    drawGoal(.025, -1); drawGoal(.975, 1);
   };
 
   const drawBot = (b, i) => {
@@ -205,7 +244,8 @@ const host = (url) => url.replace(/^https?:\/\//, '').replace(/\/$/, '');
   };
 
   const draw = () => {
-    ctx.setTransform(dpr * scale, 0, 0, dpr * scale, 0, 0);
+    ctx.setTransform(dpr * scale, 0, 0, dpr * scale, 0, -OFF * dpr * scale);
+    ctx.clearRect(0, 0, W, H + OFF);
     drawPitch();
     dust.forEach((d) => { ctx.fillStyle = `rgba(120,140,125,${d.life * 1.2})`; ctx.beginPath(); ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2); ctx.fill(); });
     drawBot(bots[0], 0); drawBot(bots[1], 1);
