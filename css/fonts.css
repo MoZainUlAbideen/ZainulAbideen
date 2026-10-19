@@ -1,0 +1,13 @@
+@font-face{font-family:"Hedvig Letters Serif";font-weight:400;font-display:swap;src:url(../fonts/hedvig-serif.woff2) format("woff2")}
+@font-face{font-family:"Mona Sans";font-weight:200 900;font-display:swap;src:url(../fonts/mona-sans.woff2) format("woff2")}
+@font-face{font-family:"Mona Sans";font-weight:200 900;font-style:italic;font-display:swap;src:url(../fonts/mona-sans-italic.woff2) format("woff2")}
+/* the games keep their arcade lettering */
+@font-face{font-family:"Orbitron";font-weight:500;font-display:swap;src:url(../fonts/orbitron-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"Orbitron";font-weight:700 900;font-display:swap;src:url(../fonts/orbitron-latin-700-normal.woff2) format("woff2")}
+@font-face{font-family:"Chakra Petch";font-weight:700;font-display:swap;src:url(../fonts/chakra-petch-latin-700-normal.woff2) format("woff2")}
+@font-face{font-family:"Chakra Petch";font-weight:700;font-style:italic;font-display:swap;src:url(../fonts/chakra-petch-latin-700-italic.woff2) format("woff2")}
+@font-face{font-family:"Manrope";font-weight:400;font-display:swap;src:url(../fonts/manrope-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Manrope";font-weight:500;font-display:swap;src:url(../fonts/manrope-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"Manrope";font-weight:700;font-display:swap;src:url(../fonts/manrope-latin-700-normal.woff2) format("woff2")}
+@font-face{font-family:"JetBrains Mono";font-weight:500;font-display:swap;src:url(../fonts/jetbrains-mono-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"JetBrains Mono";font-weight:700;font-display:swap;src:url(../fonts/jetbrains-mono-latin-700-normal.woff2) format("woff2")}

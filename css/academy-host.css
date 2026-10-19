@@ -1,0 +1,13 @@
+/* Variables the game styles expect (they were global in the arena site) */
+.academy {
+  --ink: #eef2ff; --ink-soft: #a9b3d6; --line: rgba(160, 190, 255, .22);
+  --font-display: "Chakra Petch", "Arial Black", system-ui, sans-serif;
+  --font-body: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family: var(--font-body); color: var(--ink); line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+.academy *, .academy *::before, .academy *::after { box-sizing: border-box; }
+.academy button { font-family: inherit; }
+.academy kbd { font: 700 12px/1 var(--font-display); }
+/* above the site's nav, and fully opaque over the page */
+.academy { z-index: 200; background-color: #05070f; }
