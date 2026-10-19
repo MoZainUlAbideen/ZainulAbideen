@@ -44,6 +44,7 @@
     <nav class="nav__links" aria-label="Sections">
       <a href="#work">Work</a>
       <a href="#academy">Academy</a>
+      <a href="#approach">Approach</a>
       <a href="#experience">Experience</a>
       <a href="#stack">Stack</a>
       <a href="#beyond">Beyond</a>
@@ -52,7 +53,7 @@
     <button class="nav__menu" type="button" aria-expanded="false" aria-controls="mobile-menu">Menu</button>
   </header>
   <div class="mmenu" id="mobile-menu" hidden>
-    <a href="#work">Work</a><a href="#academy">Academy</a><a href="#experience">Experience</a><a href="#stack">Stack</a><a href="#beyond">Beyond</a>
+    <a href="#work">Work</a><a href="#academy">Academy</a><a href="#approach">Approach</a><a href="#experience">Experience</a><a href="#stack">Stack</a><a href="#beyond">Beyond</a>
     <a href="resume/Muhammad-Zain-ul-Abideen-Resume.pdf" target="_blank" rel="noopener">Résumé ↗</a>
   </div>
 
@@ -61,24 +62,27 @@
     <section class="hero">
       <div class="hero__copy">
         <p class="eyebrow"><span class="dot"></span>AI Engineer · Islamabad, Pakistan</p>
-        <h1 class="hero__h">I build reliable, scalable <em>AI&nbsp;systems.</em></h1>
-        <p class="hero__sub">I’m Muhammad Zain ul Abideen, an AI engineer who takes ML and LLM products from prototype to production: retrieval, agents, computer vision and speech. Everything I ship is tested, benchmarked against a baseline and running live.</p>
+        <h1 class="hero__h">I build reliable AI&nbsp;systems, <em>measured before they&nbsp;ship.</em></h1>
+        <p class="hero__sub">I’m Muhammad Zain ul Abideen, an AI engineer who takes ML and LLM products from prototype to production: retrieval, agents, computer vision and speech. Each one ships with its own evaluation, a deterministic check around the model, and its failure cases in the open.</p>
         <div class="hero__ctas">
           <a class="btn btn--dark" href="#work">See the work</a>
           <a class="btn btn--ghost" href="#academy">Play My Academy</a>
         </div>
-        <ul class="hero__stats">
-          <li><b>5+</b><span>Live projects</span></li>
-          <li><b>700+</b><span>Tests written</span></li>
-          <li><b>90%+</b><span>Evaluation accuracy</span></li>
-        </ul>
+
       </div>
 
+      <div class="hero__side">
       <figure class="contrib contrib--bare" aria-label="Animation: two small robots passing a football back and forth">
         <div class="contrib__board">
           <canvas id="pitch" aria-hidden="true"></canvas>
         </div>
       </figure>
+        <ul class="hero__stats">
+          <li><b>0.93</b><span>Recall@5 with reranking<em>Earshot search eval</em></span></li>
+          <li><b>0</b><span>Invented figures reached users<em>Rehnuma bill audits</em></span></li>
+          <li><b>24/24</b><span>Issues caught, zero false alarms<em>Parity WCAG benchmark</em></span></li>
+        </ul>
+      </div>
     </section>
 
     <!-- ───────── academy (video) ───────── -->
@@ -117,6 +121,34 @@
       </div>
       <!-- phones and short screens: plain cards -->
       <div class="stack-cards" id="projects"></div>
+    </section>
+
+    <!-- ───────── approach: principles + featured write-up ───────── -->
+    <section class="approach" id="approach">
+      <header class="approach__head reveal">
+        <p class="eyebrow">How I build</p>
+        <h2 class="h2">Four rules every project has to pass.</h2>
+        <p class="lede">Not slogans. Each one is a design decision you can find in the code, with the result it produced.</p>
+      </header>
+      <ol class="rules" id="rules"></ol>
+
+      <a class="note reveal" href="notes/earshot-retrieval.html" id="notes">
+        <div class="note__copy">
+          <p class="note__kicker">Engineering notes · Earshot · 8 min read</p>
+          <h3 class="note__h">The best retriever I built isn’t the one in production.</h3>
+          <p class="note__dek">Five search designs benchmarked on 45 paraphrased questions; why plain hybrid search lost to vectors alone at top-1; why the 0.93 reranker ships behind a flag; and how a word-for-word citation check took answered questions from 77.8% to 93.3%.</p>
+          <span class="note__cta">Read the write-up <span aria-hidden="true">→</span></span>
+        </div>
+        <figure class="note__fig" aria-hidden="true">
+          <div class="note__bars">
+            <p><span>Keyword</span><i style="--v:.53"></i><b>0.53</b></p>
+            <p><span>Hybrid</span><i style="--v:.76"></i><b>0.76</b></p>
+            <p><span>Vector</span><i style="--v:.80"></i><b>0.80</b></p>
+            <p class="is-top"><span>+ Rerank</span><i style="--v:.93"></i><b>0.93</b></p>
+          </div>
+          <figcaption>Recall@5 · 45 questions · 875 passages</figcaption>
+        </figure>
+      </a>
     </section>
 
     <!-- ───────── experience ───────── -->

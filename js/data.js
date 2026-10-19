@@ -22,11 +22,11 @@ export const PROJECTS = [
     metric: { from: '0.76', to: '0.93', label: 'recall@5 with a reranker over 875 passages' },
     points: [
       'Transcribes episodes with Whisper large-v3-turbo (2.65% WER, 0.55 s worst word-timestamp error) and links every claim to the second it was said.',
-      'Benchmarked keyword, vector, hybrid and reranked search; reranking won on recall but cost 1.35 s vs 69 ms, so hybrid ships and the trade-off is documented.',
+      'Benchmarked keyword, vector, hybrid and reranked search; the reranker wins on recall but costs 1.35 s vs 69 ms, so the free 0.1-CPU host runs hybrid behind a flag and the trade-off is written up.',
       'A verbatim quote checker with one repair pass raised answered questions from 77.8% to 93.3%.',
     ],
     tech: ['Python', 'Whisper', 'pgvector', 'Hybrid search'],
-    live: 'https://earshot-ten-pi.vercel.app', repo: `${GH}/Earshot`,
+    live: 'https://earshot-ten-pi.vercel.app', repo: `${GH}/Earshot`, note: 'notes/earshot-retrieval.html',
     shot: 'assets/projects/earshot.jpg', tint: 'ember',
   },
   {
@@ -136,10 +136,22 @@ export const EXPERIENCE = [
 
 // From the current resume's Technical Skills
 export const STACK = [
-  ['LLM & Retrieval', ['RAG', 'Agentic workflows', 'Hybrid search (BM25, RRF)', 'Embeddings', 'Rerankers', 'Evals (Recall@k, MRR, LLM-as-judge)', 'Gemini', 'Groq', 'Langfuse']],
-  ['ML & Vision', ['PyTorch', 'Scikit-learn', 'Image classification', 'Segmentation', 'CLIP', 'Selective prediction', 'Whisper']],
-  ['Backend & Data', ['Python', 'FastAPI', 'PostgreSQL', 'pgvector', 'REST APIs', 'SQLAlchemy', 'Playwright', 'Next.js']],
-  ['MLOps & Cloud', ['Docker', 'GitHub Actions', 'CI/CD with eval gates', 'pytest', 'Git', 'Render', 'Vercel', 'Azure', 'GCP']],
+  ['LLM & Retrieval', ['RAG', 'Agentic workflows', 'Hybrid search (BM25, RRF)', 'Embeddings', 'Rerankers', 'Evals (Recall@k, MRR, LLM-as-judge)', 'Gemini', 'Groq', 'Langfuse'], ['Earshot', 'EdgarIQ', 'Rehnuma', 'Parity']],
+  ['ML & Vision', ['PyTorch', 'Scikit-learn', 'Image classification', 'Segmentation', 'CLIP', 'Selective prediction', 'Whisper'], ['Dehqan', 'Earshot', 'RISETech']],
+  ['Backend & Data', ['Python', 'FastAPI', 'PostgreSQL', 'pgvector', 'REST APIs', 'SQLAlchemy', 'Playwright', 'Next.js'], ['Earshot', 'Parity', 'Rehnuma', 'Job Assistant']],
+  ['MLOps & Cloud', ['Docker', 'GitHub Actions', 'CI/CD with eval gates', 'pytest', 'Git', 'Render', 'Vercel', 'Azure', 'GCP'], ['Rehnuma', 'Earshot', 'SPS']],
+];
+
+// "How I build": each rule names the project where you can see it in the code
+export const RULES = [
+  { title: 'Measure before claiming.', body: 'Every number on this page comes from an eval on held-out data, run before the feature shipped.',
+    proof: 'Earshot', fact: 'Five search designs scored on 45 paraphrased questions for recall, MRR and latency before one was picked.' },
+  { title: 'Wrap the model in plain code.', body: 'A language model can invent a quote or a figure. A string match or an arithmetic check cannot be talked into accepting one.',
+    proof: 'Rehnuma', fact: 'A deterministic engine re-checks every figure the vision model reads; zero invented numbers reached users.' },
+  { title: 'Refuse rather than guess.', body: 'When confidence is low, the system says so and hands off, instead of producing a fluent wrong answer.',
+    proof: 'Dehqan', fact: 'Defers to extension offices below 0.9 confidence and refuses pesticide-dose requests, 7 out of 7.' },
+  { title: 'Publish the failure cases.', body: 'The gap between a demo and the real world is a result, so it goes in the README, not under the rug.',
+    proof: 'Dehqan', fact: '95.5% in the lab, 47.4% on real field photos. Both numbers are on the project page.' },
 ];
 
 export const CERTS = [

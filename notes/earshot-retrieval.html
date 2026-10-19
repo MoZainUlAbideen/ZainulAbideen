@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>The best retriever I built isn’t the one in production · Muhammad Zain ul Abideen</title>
+  <meta name="description" content="Engineering notes on Earshot: five search designs benchmarked on 45 paraphrased podcast questions, why the 0.93 reranker ships behind a flag, and how a deterministic citation check raised answered questions from 77.8% to 93.3%.">
+  <meta name="theme-color" content="#fffdfc">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23151313'/%3E%3Ctext x='32' y='44' font-family='Georgia,serif' font-size='36' fill='%23fffdfc' text-anchor='middle'%3Ez%3C/text%3E%3C/svg%3E">
+  <link rel="preload" href="../fonts/hedvig-serif.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../fonts/mona-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="../css/fonts.css">
+  <style>
+    :root {
+      --paper: #fffdfc; --paper-2: #f6f2ee; --ink: #151313; --ink-2: #3d3936; --ink-3: #7a736d;
+      --line: rgba(21, 19, 19, .1); --forest: #23473a; --mint: #6fdc9f; --bar: #86bf9b;
+      --serif: "Hedvig Letters Serif", Georgia, serif; --sans: "Mona Sans", system-ui, sans-serif; --mono: "JetBrains Mono", ui-monospace, monospace;
+      --ease: cubic-bezier(.2, .7, .2, 1); --pad: clamp(16px, 4vw, 40px);
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body { margin: 0; background: var(--paper); color: var(--ink); font: 400 18px/1.7 var(--sans); }
+    a { color: inherit; }
+    ::selection { background: var(--forest); color: var(--paper); }
+
+    .top { position: sticky; top: 0; z-index: 10; display: flex; justify-content: space-between; align-items: center; gap: 12px;
+      padding: 14px var(--pad); background: rgba(255, 253, 252, .82); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+    .top__mark { text-decoration: none; font: 900 20px/1 var(--sans); font-stretch: 112%; letter-spacing: -.035em; white-space: nowrap; }
+    .top__back { text-decoration: none; font: 500 14px/1 var(--sans); color: var(--ink-2); white-space: nowrap; }
+    .top__back:hover { color: var(--ink); }
+    .bar { position: fixed; left: 0; top: 0; z-index: 11; height: 2px; width: 100%; background: var(--forest); transform-origin: left; transform: scaleX(0); }
+
+    .wrap { width: min(760px, 100%); margin: 0 auto; padding: 0 var(--pad); }
+    .wide { width: min(1040px, 100%); margin: 0 auto; padding: 0 var(--pad); }
+    header.hd { padding: clamp(56px, 9vw, 110px) 0 clamp(28px, 4vw, 44px); }
+    .kicker { margin: 0 0 22px; font: 500 12px/1.5 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); }
+    .kicker b { color: var(--forest); font-weight: 600; }
+    h1 { margin: 0; font: 400 clamp(38px, 6vw, 68px)/1.04 var(--serif); letter-spacing: -.03em; text-wrap: balance; }
+    .dek { margin: 24px 0 0; font-size: clamp(18px, 1.8vw, 21px); line-height: 1.55; color: var(--ink-2); text-wrap: pretty; }
+    .meta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 30px; }
+    .pill { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid rgba(21, 19, 19, .18); text-decoration: none; font: 550 14px/1 var(--sans); }
+    .pill--dark { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+    .tldr { margin: 8px 0 0; padding: clamp(20px, 3vw, 30px); border-radius: 20px; background: var(--ink); color: #efe9e2; }
+    .tldr h2 { margin: 0 0 14px; font: 500 12px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--mint); }
+    .tldr ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; font-size: 16.5px; line-height: 1.55; }
+    .tldr li { position: relative; padding-left: 20px; }
+    .tldr li::before { content: ""; position: absolute; left: 0; top: .72em; width: 8px; height: 2px; background: var(--mint); }
+    .tldr b { color: #fff; font-weight: 600; }
+
+    article h2 { margin: clamp(56px, 7vw, 84px) 0 0; font: 400 clamp(28px, 3.4vw, 38px)/1.12 var(--serif); letter-spacing: -.02em; text-wrap: balance; }
+    article h2 small { display: block; margin-bottom: 10px; font: 500 12px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); }
+    article p { margin: 18px 0 0; color: var(--ink-2); text-wrap: pretty; }
+    article p strong { color: var(--ink); font-weight: 600; }
+    code { font: 500 .86em/1 var(--mono); padding: .18em .42em; border-radius: 6px; background: var(--paper-2); color: var(--ink); }
+    .pull { margin: 34px 0 0; padding: 4px 0 4px 22px; border-left: 3px solid var(--forest); font: 400 clamp(22px, 2.4vw, 27px)/1.35 var(--serif); letter-spacing: -.01em; color: var(--ink); }
+
+    /* pipeline diagram */
+    .flow { margin: 30px 0 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; counter-reset: s; }
+    .flow li { list-style: none; position: relative; padding: 14px 14px 16px; border-radius: 14px; background: var(--paper-2); border: 1px solid var(--line); font-size: 14px; line-height: 1.45; color: var(--ink-2); }
+    .flow li b { display: block; margin-bottom: 6px; font: 600 15px/1.25 var(--sans); color: var(--ink); }
+    .flow li::before { counter-increment: s; content: counter(s, decimal-leading-zero); display: block; margin-bottom: 10px; font: 500 11px/1 var(--mono); letter-spacing: .1em; color: var(--ink-3); }
+    .flow li.is-key { background: var(--forest); border-color: var(--forest); color: #d9eadf; }
+    .flow li.is-key b { color: #fff; } .flow li.is-key::before { color: var(--mint); }
+    .flow__cap { margin: 12px 0 0 !important; font: 500 12.5px/1.5 var(--mono) !important; color: var(--ink-3) !important; }
+    @media (max-width: 860px) { .flow { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+    /* charts */
+    .charts { margin: 34px 0 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .chart { margin: 0; padding: 20px 20px 16px; border-radius: 18px; border: 1px solid var(--line); background: #fff; }
+    .chart h3 { margin: 0; font: 600 15px/1.3 var(--sans); }
+    .chart .sub { margin: 4px 0 18px; font: 500 12px/1.4 var(--mono); color: var(--ink-3); }
+    .rows { display: grid; gap: 9px; }
+    .row { position: relative; display: grid; grid-template-columns: 118px 1fr 44px; align-items: center; gap: 10px; font-size: 13.5px; color: var(--ink-2); cursor: default; }
+    .row .track { position: relative; height: 18px; }
+    .row .fill { position: absolute; inset: 0 auto 0 0; width: calc(var(--v) * 100%); background: var(--bar); border-radius: 0 4px 4px 0; transform-origin: left; transform: scaleX(0); transition: transform 1s var(--ease), background .2s; }
+    .chart.is-in .fill { transform: scaleX(1); }
+    .row:nth-child(2) .fill { transition-delay: .06s; } .row:nth-child(3) .fill { transition-delay: .12s; } .row:nth-child(4) .fill { transition-delay: .18s; } .row:nth-child(5) .fill { transition-delay: .24s; }
+    .row.is-best .fill { background: var(--forest); }
+    .row.is-prod .fill { background: repeating-linear-gradient(135deg, var(--bar) 0 6px, #a9d3b8 6px 9px); }
+    .row b { font: 600 13px/1 var(--mono); color: var(--ink); text-align: right; }
+    .row:hover .fill { background: var(--ink); }
+    .row .tag { margin-left: 6px; font: 600 9.5px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; padding: 3px 5px; border-radius: 4px; background: var(--paper-2); color: var(--forest); }
+    .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 16px 0 0; font: 500 12px/1.3 var(--sans); color: var(--ink-3); }
+    .legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -2px; background: var(--bar); }
+    .legend i.best { background: var(--forest); }
+    .legend i.prod { background: repeating-linear-gradient(135deg, var(--bar) 0 4px, #a9d3b8 4px 6px); }
+    .tip { position: fixed; z-index: 20; pointer-events: none; padding: 8px 10px; border-radius: 8px; background: var(--ink); color: #f3efe9; font: 500 12px/1.4 var(--mono); opacity: 0; transform: translateY(4px); transition: opacity .15s, transform .15s; white-space: nowrap; }
+    .tip.on { opacity: 1; transform: none; }
+    @media (max-width: 760px) { .charts { grid-template-columns: 1fr; } .row { grid-template-columns: 104px 1fr 40px; } }
+
+    /* tables */
+    .tbl { margin: 26px 0 0; overflow-x: auto; border: 1px solid var(--line); border-radius: 16px; background: #fff; }
+    table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+    th, td { padding: 11px 14px; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--line); }
+    th:first-child, td:first-child { text-align: left; }
+    thead th { font: 600 11px/1.2 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); background: var(--paper-2); }
+    tbody tr:last-child td { border-bottom: 0; }
+    td { font-variant-numeric: tabular-nums; color: var(--ink-2); }
+    tr.hl td { background: rgba(35, 71, 58, .06); color: var(--ink); font-weight: 550; }
+    .tbl-cap { margin: 10px 0 0 !important; font: 500 12.5px/1.5 var(--mono) !important; color: var(--ink-3) !important; }
+
+    .lim { margin: 26px 0 0; padding: 0; list-style: none; display: grid; gap: 12px; }
+    .lim li { padding: 16px 18px; border-radius: 14px; background: var(--paper-2); font-size: 16px; line-height: 1.55; color: var(--ink-2); }
+    .lim li b { color: var(--ink); }
+
+    .src { margin: clamp(60px, 8vw, 90px) 0 0; padding: 26px 0 0; border-top: 1px solid var(--line); }
+    .src h2 { margin: 0 0 12px; font: 500 12px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); }
+    .src ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; font-size: 15px; }
+    .src a { color: var(--ink-2); text-underline-offset: 3px; }
+    .src a:hover { color: var(--ink); }
+
+    .end { margin: clamp(56px, 8vw, 96px) 0 0; padding: clamp(28px, 4vw, 44px) 0 clamp(40px, 6vw, 64px); border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 18px; }
+    .end p { margin: 0; font: 400 clamp(22px, 2.6vw, 30px)/1.2 var(--serif); }
+    .end div { display: flex; flex-wrap: wrap; gap: 10px; }
+
+    .reveal { opacity: 0; transform: translateY(14px); transition: opacity .7s var(--ease), transform .7s var(--ease); }
+    .reveal.is-in { opacity: 1; transform: none; }
+    @media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; } .fill { transform: none !important; transition: none !important; } .bar { display: none; } }
+  </style>
+</head>
+<body>
+  <div class="bar" id="bar" aria-hidden="true"></div>
+  <nav class="top" aria-label="Site">
+    <a class="top__mark" href="../" aria-label="Zain-ul-Abideen, home">ZAIN-UL-ABIDEEN</a>
+    <a class="top__back" href="../#approach">← Back to the portfolio</a>
+  </nav>
+
+  <main>
+    <header class="hd wrap">
+      <p class="kicker"><b>Engineering notes</b> · Earshot · October 2026 · 8 min read</p>
+      <h1>The best retriever I built isn’t the one in production.</h1>
+      <p class="dek">Earshot answers questions across podcasts and cites the exact second each claim was said. Here is how I chose its search design with an eval instead of intuition, why the most accurate option ships switched off, and how a plain string check made the citations trustworthy.</p>
+      <div class="meta">
+        <a class="pill pill--dark" href="https://earshot-ten-pi.vercel.app" target="_blank" rel="noopener">Try Earshot <span aria-hidden="true">↗</span></a>
+        <a class="pill" href="https://github.com/MoZainUlAbideen/Earshot" target="_blank" rel="noopener">Source on GitHub <span aria-hidden="true">↗</span></a>
+      </div>
+    </header>
+
+    <div class="wrap reveal">
+      <section class="tldr" aria-labelledby="tldr">
+        <h2 id="tldr">The short version</h2>
+        <ul>
+          <li>I scored <b>five search designs</b> on 45 paraphrased questions over 875 passages, for recall, MRR and latency.</li>
+          <li>Plain hybrid search was <b>worse than vectors alone</b> at top-1 (0.51 vs 0.58). “Hybrid always wins” is a claim to measure.</li>
+          <li>A small cross-encoder reranker lifted recall@5 to <b>0.93</b>, at 1.35 s per query instead of 69 ms.</li>
+          <li>The free host has 0.1 of a CPU, so production runs hybrid (0.76) behind a <b>config flag</b>. The reranker is one environment variable away.</li>
+          <li>A deterministic citation critic plus one repair pass took answered questions from <b>77.8% to 93.3%</b>.</li>
+        </ul>
+      </section>
+    </div>
+
+    <article class="wrap">
+      <h2 class="reveal"><small>01 · The problem</small>Search where the answer is a moment, not a document.</h2>
+      <p class="reveal">Thousands of hours of expert conversation live in podcasts, and almost none of it is searchable. Finding “that bit where someone explained X” means scrubbing through hour-long episodes. Earshot transcribes episodes, indexes them, and answers a question across many episodes at once. The hard requirement is the citation: <strong>every claim must point to the second it was said</strong>, and clicking it plays the original audio from there.</p>
+      <p class="reveal">That turns a vague goal (“good search”) into something measurable. A retrieved passage is only useful if it contains the answer, and a citation is only useful if it lands close enough to the true moment that a listener hears it. I used <strong>±15 seconds</strong> as that bar.</p>
+    </article>
+
+    <div class="wide">
+      <ol class="flow reveal" aria-label="Earshot pipeline">
+        <li><b>Ingest + queue</b>RSS feeds deduplicated by fingerprint; jobs claimed with <code>SKIP LOCKED</code> in Postgres.</li>
+        <li><b>Transcribe</b>Voice-activity chunks, Whisper large-v3-turbo with word-level timestamps.</li>
+        <li><b>Index</b>Overlapping 45 s passages, Postgres full-text + bge-small embeddings in pgvector.</li>
+        <li class="is-key"><b>Search</b>Keyword + vector fused with RRF, then an optional cross-encoder reranks the top 20.</li>
+        <li class="is-key"><b>Answer + verify</b>LLM answers in JSON with a verbatim quote per claim; plain code checks every quote.</li>
+      </ol>
+      <p class="flow__cap wrap" style="padding:0">The two highlighted stages are what this write-up is about. Everything runs in one Postgres database: queue, transcripts, full-text index and vectors.</p>
+    </div>
+
+    <article class="wrap">
+      <h2 class="reveal"><small>02 · The eval</small>First, a benchmark I could trust.</h2>
+      <p class="reveal">Comparing search designs needs questions with known answers. I had an LLM write <strong>45 deliberately paraphrased questions</strong> for passages sampled from 9 episodes (875 passages in total), each with a verbatim evidence quote. Then I located that quote in the word timings to get the <strong>exact answer time</strong> for every question. Paraphrasing matters: a question that copies the transcript’s words flatters keyword search.</p>
+      <p class="reveal">Two rules kept the eval honest. Recall is a <strong>lower bound</strong>, because only one passage counts as correct per question even when a neighbour also contains the answer. And I had already learned not to trust references blindly: in the transcription eval, a “hand-corrected” reference that started from a model’s draft kept 99.7% of that draft, so it measured agreement with the model, not accuracy. The scorer now flags any reference that changed less than 1% of its draft.</p>
+      <p class="pull reveal">If the benchmark is wrong, every decision made with it is wrong too. So the benchmark got tests before the search did.</p>
+
+      <h2 class="reveal"><small>03 · Results</small>Five designs, one table.</h2>
+      <p class="reveal">Each design ran the same 45 questions on the same laptop CPU. Hover a bar for exact values; the full table follows.</p>
+    </article>
+
+    <div class="wide">
+      <div class="charts">
+        <figure class="chart reveal" data-chart>
+          <h3>Recall@5</h3>
+          <p class="sub">Share of questions with the answer in the top 5 · higher is better</p>
+          <div class="rows">
+            <div class="row" style="--v:.533" data-tip="Keyword · recall@5 0.533 · p50 31 ms"><span>Keyword</span><div class="track"><i class="fill"></i></div><b>0.53</b></div>
+            <div class="row is-prod" style="--v:.756" data-tip="Hybrid (RRF) · recall@5 0.756 · p50 69 ms · runs in production"><span>Hybrid <em class="tag">live</em></span><div class="track"><i class="fill"></i></div><b>0.76</b></div>
+            <div class="row" style="--v:.8" data-tip="Vector · recall@5 0.800 · p50 41 ms"><span>Vector</span><div class="track"><i class="fill"></i></div><b>0.80</b></div>
+            <div class="row is-best" style="--v:.933" data-tip="Hybrid + jina-tiny rerank · recall@5 0.933 · p50 1.35 s · default on capable hardware"><span>+ jina-tiny</span><div class="track"><i class="fill"></i></div><b>0.93</b></div>
+            <div class="row" style="--v:.933" data-tip="Hybrid + MiniLM-L-12 rerank · recall@5 0.933 · p50 2.90 s"><span>+ MiniLM-L12</span><div class="track"><i class="fill"></i></div><b>0.93</b></div>
+          </div>
+        </figure>
+        <figure class="chart reveal" data-chart>
+          <h3>Recall@1</h3>
+          <p class="sub">Share of questions where the first result is right</p>
+          <div class="rows">
+            <div class="row" style="--v:.289" data-tip="Keyword · recall@1 0.289"><span>Keyword</span><div class="track"><i class="fill"></i></div><b>0.29</b></div>
+            <div class="row is-prod" style="--v:.511" data-tip="Hybrid (RRF) · recall@1 0.511 · below vector alone"><span>Hybrid <em class="tag">live</em></span><div class="track"><i class="fill"></i></div><b>0.51</b></div>
+            <div class="row" style="--v:.578" data-tip="Vector · recall@1 0.578"><span>Vector</span><div class="track"><i class="fill"></i></div><b>0.58</b></div>
+            <div class="row is-best" style="--v:.8" data-tip="Hybrid + jina-tiny rerank · recall@1 0.800"><span>+ jina-tiny</span><div class="track"><i class="fill"></i></div><b>0.80</b></div>
+            <div class="row" style="--v:.822" data-tip="Hybrid + MiniLM-L-12 rerank · recall@1 0.822"><span>+ MiniLM-L12</span><div class="track"><i class="fill"></i></div><b>0.82</b></div>
+          </div>
+        </figure>
+      </div>
+      <div class="wrap" style="padding:0">
+        <p class="legend"><span><i class="best"></i>Default on capable hardware</span><span><i class="prod"></i>Runs on the free production host</span><span><i></i>Other designs</span></p>
+      </div>
+    </div>
+
+    <article class="wrap">
+      <div class="tbl reveal">
+        <table>
+          <thead><tr><th scope="col">Design</th><th scope="col">R@1</th><th scope="col">R@5</th><th scope="col">R@10</th><th scope="col">MRR@10</th><th scope="col">p50 latency</th></tr></thead>
+          <tbody>
+            <tr><td>Keyword (Postgres full-text)</td><td>0.29</td><td>0.53</td><td>0.64</td><td>0.38</td><td>31 ms</td></tr>
+            <tr><td>Vector (bge-small + pgvector)</td><td>0.58</td><td>0.80</td><td>0.87</td><td>0.67</td><td>41 ms</td></tr>
+            <tr><td>Hybrid (RRF), production</td><td>0.51</td><td>0.76</td><td>0.87</td><td>0.60</td><td>69 ms</td></tr>
+            <tr class="hl"><td>Hybrid + jina-reranker-v1-tiny</td><td>0.80</td><td>0.93</td><td>0.96</td><td>0.85</td><td>1.35 s</td></tr>
+            <tr><td>Hybrid + MiniLM-L-6</td><td>0.78</td><td>0.93</td><td>0.96</td><td>0.83</td><td>1.84 s</td></tr>
+            <tr><td>Hybrid + jina-reranker-v1-turbo</td><td>0.67</td><td>0.96</td><td>0.96</td><td>0.78</td><td>1.69 s</td></tr>
+            <tr><td>Hybrid + MiniLM-L-12</td><td>0.82</td><td>0.93</td><td>0.96</td><td>0.87</td><td>2.90 s</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="tbl-cap">45 questions · 9 episodes · 875 passages · laptop CPU · measured 6 Oct 2026 · raw results in evals/results/retrieval.json</p>
+
+      <h2 class="reveal"><small>04 · The surprise</small>Hybrid search lost to vectors alone.</h2>
+      <p class="reveal">The standard advice is that hybrid search (keyword plus vectors, fused with Reciprocal Rank Fusion) beats either half. On this benchmark it didn’t: hybrid’s <strong>recall@1 was 0.51, below vector-only at 0.58</strong>. Paraphrased questions share meaning with the answer, not words, so the keyword leg mostly adds noise that RRF then mixes into the top spots.</p>
+      <p class="reveal">I kept hybrid anyway, for two reasons the averages hide. Exact-term queries (a file name like <code>AGENTS.md</code>, a person, a paper) are where keyword search earns its place, and the benchmark under-samples them. And hybrid’s recall@10 matches vector’s at 0.87, which is what matters when a reranker re-orders the top 20 next. The keyword leg also needed a fix first: <code>websearch_to_tsquery</code> ANDs every word, and natural-language questions rarely have all their words in one passage, so I switched it to OR semantics and covered that with a test.</p>
+      <p class="pull reveal">“Hybrid always wins” is a claim to measure, not assume.</p>
+
+      <h2 class="reveal"><small>05 · Choosing a reranker</small>One question behind, at half the latency.</h2>
+      <p class="reveal">Reranking was the big win: a cross-encoder reading the question and each of the top 20 passages together lifted recall@1 from 0.51 to around 0.80. I tested four. MiniLM-L-12 was the most accurate at top-1 (0.82), but jina-reranker-v1-tiny scored 0.80, <strong>one question behind on 45, at 1.35 s instead of 2.9 s</strong>. The turbo variant had the best recall@5 (0.96) but dropped to 0.67 at top-1, which matters because the answerer leans hardest on the first results. I picked jina-tiny as the default on the latency trade-off.</p>
+
+      <h2 class="reveal"><small>06 · Production</small>Why the best design ships switched off.</h2>
+      <p class="reveal">The live API runs on Render’s free tier, which gives the container <strong>0.1 of a CPU</strong>. Reranking 20 passages there would take tens of seconds per question, which no one waits for. So production sets <code>RERANK=0</code> and serves hybrid retrieval at recall@5 0.76, with a 69 ms search.</p>
+      <p class="reveal">The important part is how that decision lives in the code: <strong>a config flag, not deleted code</strong>. The reranker path is still covered by tests and warms up at startup whenever it’s on, the <code>/health</code> endpoint reports which search mode is live, and the trade-off is written next to the flag with the measured numbers. When the app moves to a paid instance or a hosted reranker, recall@5 goes from 0.76 to 0.93 by changing one environment variable.</p>
+
+      <h2 class="reveal"><small>07 · Citations</small>A string check the model can’t talk its way past.</h2>
+      <p class="reveal">The eval exposed one more problem: passages are too coarse to cite. Even with reranking, the top passage’s start time landed within ±15 s of the true answer at most 40% of the time, because the answer sits around 15 seconds into a 45-second window. So answers don’t cite passages. The LLM must return JSON with a <strong>verbatim quote behind every claim</strong>, and a deterministic critic checks each quote word for word against the transcript and timestamps the citation at the exact word where the quote begins. Sentences without a verified quote are removed; if nothing survives, Earshot says it couldn’t find an answer rather than guess.</p>
+      <p class="reveal">The first version was too strict. Classifying every refusal showed that <strong>8 of 10 were the critic rejecting every quote</strong>, and none were retrieval misses. One repair pass fixed most of them: the model is told which quotes failed and why, and its new answer goes through the same check. The model also liked to quote the host’s question as evidence, so a quote containing a question mark is now rejected outright.</p>
+      <div class="tbl reveal">
+        <table>
+          <thead><tr><th scope="col">45 golden questions</th><th scope="col">No repair</th><th scope="col">One repair pass</th></tr></thead>
+          <tbody>
+            <tr class="hl"><td>Answered (all are answerable)</td><td>77.8%</td><td>93.3%</td></tr>
+            <tr class="hl"><td>Verified citation within ±15 s</td><td>62.2%</td><td>80.0%</td></tr>
+            <tr><td>Tokens per answer</td><td>1,310</td><td>1,842 (+40%)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="tbl-cap">Full pipeline: search → LLM answer → deterministic critic → one repair pass · raw results in evals/results/answers.json</p>
+
+      <h2 class="reveal"><small>08 · Honest limits</small>What these numbers don’t prove.</h2>
+      <ul class="lim reveal">
+        <li><b>A quote can exist without supporting the claim.</b> The critic proves the words were said, not that they mean what the answer says. That gap is why citation accuracy is tracked separately from the answered rate.</li>
+        <li><b>45 questions is a small benchmark.</b> One question is 2.2 points of recall, so differences under about 0.05 are within noise. That’s part of why the reranker was chosen on latency, not on a one-question lead.</li>
+        <li><b>The questions were LLM-written.</b> Paraphrasing on purpose makes them harder for keyword search, and real users may phrase things differently. Real query logs are the next evaluation set.</li>
+        <li><b>Latency was measured on a laptop CPU,</b> not on the production host, which is exactly why the production host can’t run the reranker.</li>
+      </ul>
+
+      <h2 class="reveal"><small>09 · Next</small>What I’d do with more compute.</h2>
+      <p class="reveal">Turn the reranker on with a paid instance or a hosted model; add an eval gate in CI so a change that lowers recall can’t deploy; trace every answer in Langfuse with cost per audio-hour; and add speaker diarization so citations say who said it, not just when.</p>
+
+      <section class="src" aria-labelledby="src">
+        <h2 id="src">Sources in the repo</h2>
+        <ul>
+          <li><a href="https://github.com/MoZainUlAbideen/Earshot/blob/main/README.md" target="_blank" rel="noopener">README: architecture, results tables and design decisions</a></li>
+          <li><a href="https://github.com/MoZainUlAbideen/Earshot/blob/main/LEARNINGS.md" target="_blank" rel="noopener">LEARNINGS.md: what broke at each milestone and how it was fixed</a></li>
+          <li><a href="https://github.com/MoZainUlAbideen/Earshot/blob/main/evals/results/retrieval.json" target="_blank" rel="noopener">evals/results/retrieval.json: raw retrieval results</a></li>
+          <li><a href="https://github.com/MoZainUlAbideen/Earshot/blob/main/evals/results/answers.json" target="_blank" rel="noopener">evals/results/answers.json: raw answer and citation results</a></li>
+          <li><a href="https://github.com/MoZainUlAbideen/Earshot/blob/main/src/earshot/api.py" target="_blank" rel="noopener">src/earshot/api.py: the RERANK flag and its reasoning</a></li>
+        </ul>
+      </section>
+    </article>
+
+    <footer class="wrap end">
+      <p>Want the 60-second version in an interview? Ask me.</p>
+      <div>
+        <a class="pill pill--dark" href="mailto:mu.zainulabideen@gmail.com">Email me <span aria-hidden="true">↗</span></a>
+        <a class="pill" href="../#work">See all projects</a>
+      </div>
+    </footer>
+  </main>
+
+  <div class="tip" id="tip" role="presentation"></div>
+  <script>
+    // reading-progress bar, reveal on scroll, bar-chart tooltips
+    const bar = document.getElementById('bar');
+    const onScroll = () => { const m = document.documentElement.scrollHeight - innerHeight; bar.style.transform = `scaleX(${m > 0 ? scrollY / m : 0})`; };
+    addEventListener('scroll', onScroll, { passive: true }); onScroll();
+    const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); } }), { threshold: .15 });
+    document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
+    const tip = document.getElementById('tip');
+    document.querySelectorAll('[data-tip]').forEach((row) => {
+      row.addEventListener('pointermove', (e) => { tip.textContent = row.dataset.tip; tip.style.left = Math.min(e.clientX + 14, innerWidth - tip.offsetWidth - 8) + 'px'; tip.style.top = (e.clientY + 16) + 'px'; tip.classList.add('on'); });
+      row.addEventListener('pointerleave', () => tip.classList.remove('on'));
+    });
+  </script>
+</body>
+</html>

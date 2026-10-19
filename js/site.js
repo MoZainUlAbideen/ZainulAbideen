@@ -2,7 +2,7 @@
 //  Page behaviour: boot sequence, football bots, custom cursor, project cards,
 //  sections from data.js, scroll reveals, and the My Academy games.
 // ─────────────────────────────────────────────────────────────
-import { PROJECTS, EXPERIENCE, STACK, CERTS, BEYOND } from './data.js';
+import { PROJECTS, EXPERIENCE, STACK, CERTS, BEYOND, RULES } from './data.js';
 import { Academy } from './academy/academy.js';
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -263,6 +263,7 @@ const host = (url) => url.replace(/^https?:\/\//, '').replace(/\/$/, '');
     const l = [];
     if (p.live) l.push(h('a', { href: p.live, ...ext }, 'Live ', h('span', { 'aria-hidden': 'true' }, '↗')));
     if (p.repo) l.push(h('a', { href: p.repo, ...ext }, 'GitHub ', h('span', { 'aria-hidden': 'true' }, '↗')));
+    if (p.note) l.push(h('a', { href: p.note, class: 'is-note' }, 'Write-up ', h('span', { 'aria-hidden': 'true' }, '→')));
     return h('div', { class: 'pcard__links' }, l);
   };
   const visualEl = (p) => p.shot
@@ -348,7 +349,15 @@ $('#timeline').append(...EXPERIENCE.map((x) => h('li', { class: 'tl reveal' },
     h('ul', {}, x.points.map((t) => h('li', {}, t))),
   ),
 )));
-$('#skills').append(...STACK.map(([g, list]) => h('div', { class: 'skill reveal' }, h('h3', {}, g), h('ul', { class: 'tags' }, list.map((t) => h('li', {}, t))))));
+$('#skills').append(...STACK.map(([g, list, used]) => h('div', { class: 'skill reveal' },
+  h('h3', {}, g),
+  h('div', {}, h('ul', { class: 'tags' }, list.map((t) => h('li', {}, t))),
+    used ? h('p', { class: 'skill__used' }, h('span', {}, 'Used in'), used.join(' · ')) : null))));
+$('#rules').append(...RULES.map((r, i) => h('li', { class: 'rule reveal', style: `--i:${i}` },
+  h('p', { class: 'rule__n' }, String(i + 1).padStart(2, '0')),
+  h('h3', { class: 'rule__t' }, r.title),
+  h('p', { class: 'rule__b' }, r.body),
+  h('p', { class: 'rule__proof' }, h('b', {}, r.proof), r.fact))));
 $('#certs').append(...CERTS.map((c) => h('li', { class: 'reveal' }, h('a', { href: c.href, ...ext }, h('b', {}, c.title), h('span', {}, c.issuer), h('em', { 'aria-hidden': 'true' }, '↗')))));
 
 // ───────── beyond the code: tabs + accordion ─────────
