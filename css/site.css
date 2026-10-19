@@ -101,10 +101,11 @@ a { color: inherit; }
 }
 .nav > * { pointer-events: auto; }
 .nav__logo {
-  padding: 9px 16px 11px; border-radius: 12px; text-decoration: none;
-  background: var(--ink); color: var(--paper); font: 400 21px/1 var(--serif); letter-spacing: -.02em; white-space: nowrap;
+  padding: 9px 12px 8px; border-radius: 10px; text-decoration: none; white-space: nowrap;
+  color: var(--ink); font: 900 22px/1 var(--sans); font-stretch: 112%; letter-spacing: -.035em;
+  background: rgba(255, 253, 252, .72); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
 }
-@media (max-width: 520px) { .nav__logo { font-size: 17px; padding: 10px 13px 11px; } }
+@media (max-width: 520px) { .nav__logo { font-size: 18px; padding: 8px 10px 7px; } }
 .nav__links {
   display: flex; align-items: center; gap: 2px; padding: 5px;
   border-radius: 14px; background: rgba(246, 242, 238, .78); border: 1px solid var(--line);
@@ -378,14 +379,12 @@ a { color: inherit; }
 .foot__me img { display: block; width: 100%; height: auto; border-radius: 18px; }
 .foot__me:hover { translate: 0 -4px; box-shadow: 0 0 0 1px rgba(111, 220, 159, .6), 0 0 22px 2px rgba(63, 143, 99, .45), 0 0 44px 4px rgba(111, 220, 159, .22); }
 .foot__mark {
-  width: min(var(--max), 100%); margin: clamp(48px, 7vw, 88px) auto 0; padding: clamp(18px, 2.6vw, 34px) clamp(16px, 2.4vw, 32px);
-  border-radius: clamp(14px, 2vw, 26px); background: var(--ink); color: var(--paper);
-  text-align: center; white-space: nowrap; overflow: hidden;
-  font: 400 clamp(26px, 6.1vw, 92px)/1 var(--serif); letter-spacing: -.03em;
+  width: min(var(--max), 100%); margin: clamp(40px, 6vw, 80px) auto 0; text-align: center; white-space: nowrap;
+  color: var(--ink); font: 900 clamp(34px, 10.2vw, 156px)/.86 var(--sans); font-stretch: 112%; letter-spacing: -.045em;
 }
 .foot__small { width: min(var(--max), 100%); margin: 22px auto 0; font: 500 12px/1 var(--mono); color: var(--ink-3); }
 @media (max-width: 760px) { .foot__cols { grid-template-columns: 1fr 1fr; } .foot__me { grid-column: 1 / -1; grid-row: 1; justify-self: start; } }
-@media (max-width: 600px) { .foot__mark { font-size: 6.6vw; padding: 16px 12px; } }
+
 
 
 @media (prefers-reduced-motion: reduce) {
