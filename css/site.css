@@ -102,8 +102,9 @@ a { color: inherit; }
 .nav > * { pointer-events: auto; }
 .nav__logo {
   padding: 9px 16px 11px; border-radius: 12px; text-decoration: none;
-  background: var(--ink); color: var(--paper); font: 400 21px/1 var(--serif); letter-spacing: -.02em;
+  background: var(--ink); color: var(--paper); font: 400 21px/1 var(--serif); letter-spacing: -.02em; white-space: nowrap;
 }
+@media (max-width: 520px) { .nav__logo { font-size: 17px; padding: 10px 13px 11px; } }
 .nav__links {
   display: flex; align-items: center; gap: 2px; padding: 5px;
   border-radius: 14px; background: rgba(246, 242, 238, .78); border: 1px solid var(--line);
@@ -402,54 +403,49 @@ a { color: inherit; }
 /* ───────── work: pinned player (desktop) ─────────
    The .pin box is tall; its stage sticks to the screen while you scroll
    through it, so every project gets its turn before the page moves on. */
-.pin { display: none; position: relative; height: calc(100vh + (var(--n, 6) - 1) * 80vh); }
+.pin { display: none; position: relative; height: calc(var(--n, 6) * 100vh); }
 .pin__stage {
-  position: sticky; top: 0; height: 100vh;
-  display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); grid-template-rows: 1fr auto;
-  gap: 0 clamp(28px, 4vw, 64px); align-items: center;
-  padding: 96px 0 32px;
+  position: sticky; top: 0; height: 100vh; overflow: clip;
+  display: grid; grid-template-columns: minmax(0, .82fr) minmax(0, 1.18fr);
+  gap: clamp(32px, 5vw, 80px); padding: 82px 0 22px;
 }
-.pin__copy { position: relative; align-self: center; min-height: 460px; }
-.pin__item {
-  position: absolute; inset: 0 0 auto 0; display: flex; flex-direction: column;
-  opacity: 0; transform: translateY(18px); pointer-events: none;
-  transition: opacity .45s var(--ease), transform .55s var(--ease);
+.pin__copy { position: relative; align-self: center; height: 420px; }
+.pin__item { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; pointer-events: none; }
+.pin__item.is-on { pointer-events: auto; }
+/* each line wipes in from below, and out upwards (refactr-style) */
+.pin__line { overflow: hidden; padding-bottom: .08em; }
+.pin__line > * {
+  transform: translateY(105%); opacity: 0;
+  transition: transform .7s var(--ease), opacity .45s var(--ease);
 }
-.pin__item.is-on { opacity: 1; transform: none; pointer-events: auto; transition-delay: .08s; }
-.pin__item .pcard__foot { margin-top: 22px; padding-top: 0; justify-content: flex-start; gap: 14px 22px; }
-.pin__visuals { position: relative; height: min(64vh, 560px); align-self: center; clip-path: inset(-60px -60px 0 -60px); /* next card rises out of the bottom edge */ }
+.pin__item.is-on .pin__line > * { transform: none; opacity: 1; transition-delay: calc(var(--d) + 120ms); }
+.pin__item.is-out-up .pin__line > * { transform: translateY(-105%); opacity: 0; transition-delay: calc(var(--d) * .5); }
+.pin__item.is-out-down .pin__line > * { transform: translateY(105%); opacity: 0; transition-delay: calc(var(--d) * .5); }
+.pin__kicker { margin: 0 0 14px; font: 500 12px/1.4 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); }
+.pin__name { margin: 0; font: 400 clamp(40px, 4.4vw, 64px)/1.02 var(--serif); letter-spacing: -.025em; color: var(--ink); }
+.pin__tag { margin: 16px 0 0; max-width: 30ch; font-size: clamp(17px, 1.35vw, 20px); line-height: 1.5; color: var(--ink-2); }
+.pin__metric { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; margin: 26px 0 0; font: 400 15px/1.3 var(--sans); color: var(--ink-3); }
+.pin__metric s { font-family: var(--serif); font-size: 20px; }
+.pin__metric b { font: 400 30px/1 var(--serif); color: var(--ink); letter-spacing: -.02em; }
+.pin__metric span { flex-basis: 100%; font: 500 11px/1.4 var(--mono); letter-spacing: .08em; text-transform: uppercase; }
+.pin__links { margin-top: 24px; }
+.pin__visuals { position: relative; height: 100%; }
 .pin__card {
-  position: absolute; inset: 0; border-radius: var(--r); overflow: hidden; isolation: isolate;
-  display: grid; place-items: center; padding: clamp(20px, 3vw, 44px);
-  box-shadow: 0 30px 60px -36px rgba(21, 19, 19, .5), 0 0 0 1px var(--line);
-  transform-origin: 50% 0; will-change: transform;
+  position: absolute; inset: calc(var(--k) * 9px) 0 0 0; border-radius: 10px; overflow: hidden; isolation: isolate;
+  display: grid; place-items: center; padding: clamp(28px, 5%, 64px);
+  box-shadow: 0 -10px 40px -24px rgba(21, 19, 19, .45), 0 0 0 1px rgba(21, 19, 19, .06);
+  will-change: transform;
 }
 .pin__card::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--bg); }
 .pin__card::after {
   content: ""; position: absolute; inset: 0; z-index: -1; opacity: .25; mix-blend-mode: soft-light;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
-.pin__card .shot { transform: rotate(-1deg); }
-.pin__nav {
-  grid-column: 1 / -1; list-style: none; margin: 0; padding: 18px 0 0; position: relative;
-  display: grid; grid-template-columns: repeat(var(--n, 6), 1fr); gap: 8px; border-top: 1px solid var(--line);
-}
-.pin__nav::before { /* progress bar along the top edge */
-  content: ""; position: absolute; left: 0; top: -1px; height: 2px; width: calc(var(--prog, 0) * 100%); background: var(--ink);
-}
-.pin__nav button {
-  display: grid; gap: 4px; width: 100%; padding: 0; border: 0; background: none; cursor: pointer; text-align: left;
-  font: 550 14px/1.2 var(--sans); color: var(--ink-3); transition: color .2s;
-}
-.pin__nav button span { font: 500 11px/1 var(--mono); letter-spacing: .08em; }
-.pin__nav button:hover, .pin__nav button.is-on { color: var(--ink); }
+.pin__card .shot { width: min(100%, calc((100vh - 230px) * 1.58)); transform: none; }
 .work__head { margin-bottom: 0; }
 
 @media (min-width: 901px) and (min-height: 680px) {
   .pin { display: block; }
   #projects { display: none; }
 }
-@media (min-width: 901px) and (max-height: 820px) {
-  .pin__item .pcard__points li:nth-child(3) { display: none; }
-  .pin__copy { min-height: 400px; }
-}
+

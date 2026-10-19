@@ -130,46 +130,52 @@ const host = (url) => url.replace(/^https?:\/\//, '').replace(/\/$/, '');
     h('div', { class: 'pcard__copy' }, copyEl(p, i)),
     h('div', { class: `pcard__visual tint-${p.tint}` }, visualEl(p)))));
 
-  // pinned player (desktop)
+  // pinned player (desktop), after refactr.net: the stage holds still, the copy
+  // wipes from one project to the next, and each screenshot rises from below
+  // the screen and covers the one before it (a thin edge of it stays visible).
   const N = PROJECTS.length;
-  const pin = $('#pin'), copyBox = $('#pin-copy'), visBox = $('#pin-visuals'), nav = $('#pin-nav');
+  const pin = $('#pin'), copyBox = $('#pin-copy'), visBox = $('#pin-visuals');
   pin.style.setProperty('--n', N);
-  const copies = PROJECTS.map((p, i) => { const c = h('article', { class: 'pin__item', 'aria-hidden': String(i !== 0) }, copyEl(p, i)); copyBox.append(c); return c; });
-  const cards = PROJECTS.map((p, i) => { const v = h('div', { class: `pin__card tint-${p.tint}` }, visualEl(p)); visBox.append(v); return v; });
-  const dots = PROJECTS.map((p, i) => {
-    const b = h('button', { type: 'button' }, h('span', {}, String(i + 1).padStart(2, '0')), p.name);
-    b.addEventListener('click', () => {
-      const r = pin.getBoundingClientRect(), span = pin.offsetHeight - innerHeight;
-      scrollTo({ top: scrollY + r.top + span * (i / (N - 1)) + 2, behavior: reduced ? 'auto' : 'smooth' });
-    });
-    nav.append(h('li', {}, b));
-    return b;
+  const pinCopy = (p, i) => [
+    h('p', { class: 'pin__kicker' }, String(i + 1).padStart(2, '0') + ' / ' + String(N).padStart(2, '0') + ' · ' + p.kind),
+    h('h3', { class: 'pin__name' }, p.name),
+    h('p', { class: 'pin__tag' }, p.tagline),
+    p.metric ? h('p', { class: 'pin__metric' }, p.metric.from ? [h('s', {}, p.metric.from), ' → '] : null, h('b', {}, p.metric.to), h('span', {}, p.metric.label)) : null,
+    h('div', { class: 'pin__links' }, linksEl(p)),
+  ];
+  const copies = PROJECTS.map((p, i) => {
+    const c = h('article', { class: 'pin__item' + (i === 0 ? ' is-on' : ''), 'aria-hidden': String(i !== 0) },
+      pinCopy(p, i).filter(Boolean).map((n, k) => h('div', { class: 'pin__line', style: `--d:${k * 55}ms` }, n)));
+    copyBox.append(c); return c;
+  });
+  const cards = PROJECTS.map((p, i) => {
+    const v = h('div', { class: `pin__card tint-${p.tint}`, style: `--k:${i}` }, visualEl(p)); visBox.append(v); return v;
   });
 
-  const ease = (x) => x * x * (3 - 2 * x);
-  let active = -1;
+  const ease = (x) => 1 - Math.pow(1 - x, 3);
+  const clamp = (x) => Math.min(1, Math.max(0, x));
+  let active = 0;
   const update = () => {
     if (getComputedStyle(pin).display === 'none') return;
     const r = pin.getBoundingClientRect(), span = pin.offsetHeight - innerHeight;
-    const prog = Math.min(1, Math.max(0, -r.top / span));
-    const t = prog * (N - 1);                       // 0 … N-1
+    const t = clamp(-r.top / span) * (N - 1);       // 0 … N-1
+    const lift = visBox.offsetHeight + innerHeight * 0.1;   // start just below the screen
     cards.forEach((c, k) => {
-      // card k slides up from below during the half-step before it becomes active
-      const enter = k === 0 ? 1 : ease(Math.min(1, Math.max(0, (t - (k - 1) - 0.3) / 0.55)));
-      const covered = Math.min(1, Math.max(0, t - k));   // how far the next card has come over it
-      const y = (1 - enter) * 104;
-      const s = 1 - Math.min(covered, 1) * 0.06;
-      c.style.transform = `translate3d(0, ${y}%, 0) scale(${s})`;
-      c.style.filter = covered > 0.02 ? `brightness(${1 - covered * 0.15})` : '';
-      c.style.zIndex = String(k + 1);
+      // card k rises during the middle of the step before it, then holds
+      const enter = k === 0 ? 1 : ease(clamp((t - (k - 1) - 0.2) / 0.6));
+      const covered = clamp(t - k - 0.2);
+      c.style.transform = `translate3d(0, ${((1 - enter) * lift).toFixed(1)}px, 0)`;
+      c.style.filter = covered > 0.01 ? `brightness(${(1 - covered * 0.12).toFixed(3)})` : '';
     });
-    const now = Math.min(N - 1, Math.round(t));
+    const now = Math.min(N - 1, Math.floor(t + 0.45));
     if (now !== active) {
+      copies[active].classList.remove('is-on'); copies[active].classList.add(now > active ? 'is-out-up' : 'is-out-down');
+      copies[active].setAttribute('aria-hidden', 'true');
+      const prev = copies[active]; setTimeout(() => prev.classList.remove('is-out-up', 'is-out-down'), 600);
+      copies[now].classList.remove('is-out-up', 'is-out-down');
+      copies[now].classList.add('is-on'); copies[now].setAttribute('aria-hidden', 'false');
       active = now;
-      copies.forEach((c, k) => { c.classList.toggle('is-on', k === now); c.setAttribute('aria-hidden', String(k !== now)); });
-      dots.forEach((d, k) => d.classList.toggle('is-on', k === now));
     }
-    nav.style.setProperty('--prog', String(prog));
   };
   addEventListener('scroll', update, { passive: true });
   addEventListener('resize', update);
