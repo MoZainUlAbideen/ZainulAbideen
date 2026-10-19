@@ -409,7 +409,7 @@ a { color: inherit; }
   display: grid; grid-template-columns: minmax(0, .82fr) minmax(0, 1.18fr);
   gap: clamp(32px, 5vw, 80px); padding: 82px 0 22px;
 }
-.pin__copy { position: relative; align-self: center; height: 420px; }
+.pin__copy { position: relative; align-self: center; height: min(420px, calc(100vh - 110px)); }
 .pin__item { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; pointer-events: none; }
 .pin__item.is-on { pointer-events: auto; }
 /* each line wipes in from below, and out upwards (refactr-style) */
@@ -441,10 +441,18 @@ a { color: inherit; }
   content: ""; position: absolute; inset: 0; z-index: -1; opacity: .25; mix-blend-mode: soft-light;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
-.pin__card .shot { width: min(100%, calc((100vh - 230px) * 1.58)); transform: none; }
+.pin__card .shot { width: min(100%, calc((100vh - 200px) * 1.58)); transform: none; }
+@media (max-height: 700px) {
+  .pin__stage { padding: 72px 0 16px; }
+  .pin__card { padding: 20px; }
+  .pin__name { font-size: clamp(34px, 3.6vw, 50px); }
+  .pin__tag { margin-top: 10px; font-size: 16px; }
+  .pin__metric { margin-top: 16px; }
+  .pin__links { margin-top: 16px; }
+}
 .work__head { margin-bottom: 0; }
 
-@media (min-width: 901px) and (min-height: 680px) {
+@media (min-width: 901px) and (min-height: 480px) {
   .pin { display: block; }
   #projects { display: none; }
 }
