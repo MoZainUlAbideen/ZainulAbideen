@@ -54,7 +54,7 @@ export const PROJECTS = [
       'FastAPI with a job queue, rate limits and SSRF protection; hybrid RAG over 1,092 W3C passages; 190+ tests.',
     ],
     tech: ['Python', 'FastAPI', 'Playwright', 'Gemini'],
-    live: 'https://parity-iota-puce.vercel.app', repo: `${GH}/Parity`,
+    live: 'https://parity-iota-puce.vercel.app', repo: `${GH}/Parity`, note: 'notes/parity-doubt.html',
     shot: 'assets/projects/parity.jpg', tint: 'sky',
   },
   {
@@ -68,7 +68,7 @@ export const PROJECTS = [
       '319 tests and 20 eval metrics gated in CI, Langfuse tracing with PII masking.',
     ],
     tech: ['Python', 'FastAPI', 'Next.js', 'Gemini'],
-    live: 'https://rehnuma-kappa.vercel.app', repo: `${GH}/rehnuma`,
+    live: 'https://rehnuma-kappa.vercel.app', repo: `${GH}/rehnuma`, note: 'notes/rehnuma-cited-but-wrong.html',
     shot: 'assets/projects/rehnuma.jpg', tint: 'dawn',
   },
   {

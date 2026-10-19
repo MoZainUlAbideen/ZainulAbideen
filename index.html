@@ -132,7 +132,11 @@
       </header>
       <ol class="rules" id="rules"></ol>
 
-      <a class="note reveal" href="notes/earshot-retrieval.html" id="notes">
+      <div class="notes__head reveal" id="notes">
+        <p class="eyebrow">Engineering notes</p>
+        <p class="notes__sub">Three write-ups on what the evals showed, what broke, and what I changed because of it. Every number links back to the raw results in the repo.</p>
+      </div>
+      <a class="note reveal" href="notes/earshot-retrieval.html">
         <div class="note__copy">
           <p class="note__kicker">Engineering notes · Earshot · 8 min read</p>
           <h3 class="note__h">The best retriever I built isn’t the one in production.</h3>
@@ -149,6 +153,22 @@
           <figcaption>Recall@5 · 45 questions · 875 passages</figcaption>
         </figure>
       </a>
+      <div class="notes2">
+        <a class="note2 reveal" href="notes/rehnuma-cited-but-wrong.html">
+          <p class="note__kicker">Rehnuma · 9 min read</p>
+          <h3 class="note2__h">A cited answer can still be wrong.</h3>
+          <p class="note2__dek">An audit engine that keeps the model away from arithmetic, Urdu retrieval from 0% to 83%, and the family’s own question answered confidently, with a citation, and wrong.</p>
+          <div class="note2__stat" aria-hidden="true"><span>Urdu clause found in top 5</span><b>0%</b><i style="--v:.83"></i><b>83%</b></div>
+          <span class="note2__cta">Read the write-up <span aria-hidden="true">→</span></span>
+        </a>
+        <a class="note2 reveal" href="notes/parity-doubt.html">
+          <p class="note__kicker">Parity · 8 min read</p>
+          <h3 class="note2__h">Adding AI made my auditor worse, until it learned to doubt itself.</h3>
+          <p class="note2__dek">Measurement agents before AI took recall from 54% to 92%. A vision model cut precision to 80%, and two checks on its own output brought it back to 100%.</p>
+          <div class="note2__stat" aria-hidden="true"><span>Precision with the vision model</span><b>80%</b><i style="--v:1"></i><b>100%</b></div>
+          <span class="note2__cta">Read the write-up <span aria-hidden="true">→</span></span>
+        </a>
+      </div>
     </section>
 
     <!-- ───────── experience ───────── -->

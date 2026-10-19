@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Adding AI made my auditor worse · Muhammad Zain ul Abideen</title>
+  <meta name="description" content="Engineering notes on Parity, an AI web-accessibility auditor: a labelled benchmark with fixed twins, measurement agents before AI, a vision model that cut precision to 80%, and the consistency checks that brought it back to 100%.">
+  <meta name="theme-color" content="#fffdfc">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23151313'/%3E%3Ctext x='32' y='44' font-family='Georgia,serif' font-size='36' fill='%23fffdfc' text-anchor='middle'%3Ez%3C/text%3E%3C/svg%3E">
+  <link rel="preload" href="../fonts/hedvig-serif.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../fonts/mona-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="../css/fonts.css">
+  <link rel="stylesheet" href="notes.css">
+</head>
+<body>
+  <div class="bar" id="bar" aria-hidden="true"></div>
+  <nav class="top" aria-label="Site">
+    <a class="top__mark" href="../" aria-label="Zain-ul-Abideen, home">ZAIN-UL-ABIDEEN</a>
+    <a class="top__back" href="../#approach">← Back to the portfolio</a>
+  </nav>
+
+  <main>
+    <header class="hd wrap">
+      <p class="kicker"><b>Engineering notes</b> · Parity · September 2026 · 8 min read</p>
+      <h1>Adding AI made my auditor worse, until it learned to doubt itself.</h1>
+      <p class="dek">Parity opens a website in a real browser and audits it the way a screen-reader user, a keyboard-only user and a low-vision user would experience it. This is how I measured it before adding AI, why the first vision model cut precision to 80%, and the cheap consistency checks that brought it back to 100% without losing a real problem.</p>
+      <div class="meta">
+        <a class="pill pill--dark" href="https://parity-iota-puce.vercel.app" target="_blank" rel="noopener">Try Parity <span aria-hidden="true">↗</span></a>
+        <a class="pill" href="https://github.com/MoZainUlAbideen/Parity" target="_blank" rel="noopener">Source on GitHub <span aria-hidden="true">↗</span></a>
+      </div>
+    </header>
+
+    <div class="wrap reveal">
+      <section class="tldr" aria-labelledby="tldr">
+        <h2 id="tldr">The short version</h2>
+        <ul>
+          <li>A standard rule engine (axe-core) caught <b>54% of 24 labelled issues</b>. Every one it missed was a judgment call.</li>
+          <li>Measurement agents with <b>no AI at all</b>, a pixel contrast meter, alt-text rules and a keyboard walk, raised recall to <b>92%</b> at 100% precision.</li>
+          <li>Adding a Gemini vision agent caught the rest, but <b>precision fell to 80%</b>: it flagged correct alt text as inadequate.</li>
+          <li>Two consistency checks on the model’s own output restored <b>100% precision and 100% recall</b>, with zero false alarms on the fixed pages.</li>
+          <li>In retrieval, a hybrid search was <b>worse than both of its parts</b> until it fused rankings at the right level.</li>
+        </ul>
+      </section>
+    </div>
+
+    <article class="wrap">
+      <h2 class="reveal"><small>01 · The problem</small>Most of the web locks someone out.</h2>
+      <p class="reveal">About 1 in 6 people live with a disability, and 95.9% of the top million homepages fail automated WCAG checks (WebAIM Million 2026). Automated checkers are good at what rules can decide: a missing label, an empty link. They can’t decide whether alt text actually describes an image, whether white text over a photo is readable, or whether a keyboard can reach a button. That gap is where an AI should help, if it can be trusted.</p>
+      <p class="reveal">So every finding Parity reports carries an honest label: <code>auto-verified</code> when a deterministic rule or measurement confirmed it, <code>ai-high-confidence</code> when an agent found it and is at least 80% sure, and <code>needs-review</code> when a human should check.</p>
+    </article>
+
+    <div class="wide">
+      <ol class="flow reveal" aria-label="Parity pipeline">
+        <li><b>Real browser</b>Playwright opens the page at desktop and mobile sizes; every request it makes is checked for SSRF.</li>
+        <li><b>Rules</b>axe-core 4.13 runs in the live page; results map to WCAG 2.2 criteria and merge across viewports.</li>
+        <li class="is-key"><b>Measure</b>Pixel contrast meter, alt-text rules and a keyboard Tab walk. No AI.</li>
+        <li class="is-key"><b>Judge</b>A Gemini vision agent reviews each image in context, then plain code checks its verdict.</li>
+        <li><b>Cite</b>Every finding cites its success criterion by exact lookup in W3C’s own text, never by search.</li>
+      </ol>
+      <p class="flow__cap wrap" style="padding:0">Highlighted: the two stages this write-up is about. Measurement comes before AI on purpose.</p>
+    </div>
+
+    <article class="wrap">
+      <h2 class="reveal"><small>02 · The benchmark</small>Broken pages, their fixed twins, and traps.</h2>
+      <p class="reveal">Before writing any agent, I built a labelled benchmark: broken pages with <strong>24 labelled issues</strong> (13 that rules can detect, 11 that need judgment), a <strong>fixed twin</strong> of every broken page, and a clean page. The twins are what make false alarms measurable: anything flagged on a fixed page is wrong by construction.</p>
+      <p class="reveal">It also includes deliberately correct cases that look suspicious: a good chart description, a decorative divider that really should be hidden, white text that really is readable over a dark photo. An auditor that flags everything would score perfect recall and fail these.</p>
+      <p class="pull reveal">If you only measure what it catches, you build an auditor that cries wolf.</p>
+
+      <h2 class="reveal"><small>03 · Results</small>Measurement first, then AI, then doubt.</h2>
+      <p class="reveal">Each configuration ran on the same benchmark. Precision is the share of reported issues that were real; recall is the share of the 24 labelled issues found.</p>
+    </article>
+
+    <div class="wide">
+      <div class="charts">
+        <figure class="chart reveal">
+          <h3>Recall · 24 labelled issues</h3>
+          <p class="sub">Share of real issues found · higher is better</p>
+          <div class="rows">
+            <div class="row" style="--v:.5417" data-tip="Rules only (axe-core) · 13 of 24 · recall 54%"><span>Rules only</span><div class="track"><i class="fill"></i></div><b>54%</b></div>
+            <div class="row" style="--v:.9167" data-tip="Rules + agents, no AI · 22 of 24 · recall 92%"><span>+ Agents, no AI</span><div class="track"><i class="fill"></i></div><b>92%</b></div>
+            <div class="row is-best" style="--v:1" data-tip="Everything, with consistency checks · 24 of 24 · recall 100%"><span>+ Vision, checked</span><div class="track"><i class="fill"></i></div><b>100%</b></div>
+          </div>
+        </figure>
+        <figure class="chart reveal">
+          <h3>Precision · reported issues that were real</h3>
+          <p class="sub">The cost of each addition · higher is better</p>
+          <div class="rows">
+            <div class="row" style="--v:1" data-tip="Rules only · precision 100%"><span>Rules only</span><div class="track"><i class="fill"></i></div><b>100%</b></div>
+            <div class="row" style="--v:1" data-tip="Rules + agents, no AI · precision 100%"><span>+ Agents, no AI</span><div class="track"><i class="fill"></i></div><b>100%</b></div>
+            <div class="row is-prod" style="--v:.8" data-tip="+ Gemini vision, before consistency checks · precision 80% · false alarms on correct alt text"><span>+ Vision, raw</span><div class="track"><i class="fill"></i></div><b>80%</b></div>
+            <div class="row is-best" style="--v:1" data-tip="+ Gemini vision, with consistency checks · precision 100%"><span>+ Vision, checked</span><div class="track"><i class="fill"></i></div><b>100%</b></div>
+          </div>
+        </figure>
+      </div>
+      <div class="wrap" style="padding:0">
+        <p class="legend"><span><i class="best"></i>Shipped configuration</span><span><i class="prod"></i>The raw vision model</span><span><i></i>Earlier configurations</span></p>
+      </div>
+    </div>
+
+    <article class="wrap">
+      <div class="tbl reveal">
+        <table>
+          <thead><tr><th scope="col">Configuration</th><th scope="col">Precision</th><th scope="col">Recall (24)</th><th scope="col">AI-only recall (11)</th><th scope="col">False alarms on fixed pages</th><th scope="col">Left for review</th></tr></thead>
+          <tbody>
+            <tr><td>Rules only (axe-core)</td><td>100%</td><td>54%</td><td>0%</td><td>0</td><td>5</td></tr>
+            <tr><td>Rules + agents, no AI</td><td>100%</td><td>92%</td><td>82%</td><td>0</td><td>0</td></tr>
+            <tr><td>+ Gemini vision, raw</td><td>80%</td><td></td><td></td><td></td><td></td></tr>
+            <tr class="hl"><td>+ Gemini vision, with consistency checks</td><td>100%</td><td>100%</td><td>100%</td><td>0</td><td>1</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="tbl-cap">gemini-3.1-flash-lite, confirmed live on 27 Sep 2026 · raw results in eval/results/agents.json · tests replay recorded answers, so CI makes no API calls</p>
+
+      <h2 class="reveal"><small>04 · Measure before you model</small>Most of the gap closed without AI.</h2>
+      <p class="reveal">The rules missed 11 issues, all judgment calls, such as a chart whose alt text is just “image”, a placeholder used as the only form label, white text over a photo, identical “Read more” links to different pages, a clickable <code>&lt;div&gt;</code> a keyboard can’t reach. Before reaching for a model, I asked which of these could be <strong>measured</strong>.</p>
+      <p class="reveal"><strong>The contrast meter</strong> renders the background without the text, screenshots exactly the text area, and measures the text colour against every pixel, judging the hardest-to-read 5% against WCAG’s 4.5:1. <strong>Alt-text rules</strong> fail placeholders like “banner” and file names like “chart_final_v2.png” (W3C failure F30), which axe doesn’t check. <strong>A keyboard agent</strong> presses Tab through the page and records every focus stop; anything that looks clickable but is never reached fails 2.1.1. Together they lifted recall from 54% to <strong>92% with no AI and no loss of precision</strong>, and left nothing for human review.</p>
+
+      <h2 class="reveal"><small>05 · The AI problem</small>A vision model that was too eager.</h2>
+      <p class="reveal">What’s left needs judgment: does this alt text convey what the image shows, in context? A Gemini vision agent looks at each image with its link, caption, heading and nearby text, judges the alt text, and proposes better alt text. It found the remaining issues. It also called <strong>correct alt text inadequate</strong>, and precision fell to 80%.</p>
+      <p class="reveal">Rather than prompt it into being less eager and hope, I checked the model against itself. If it calls alt text inadequate but its own suggested replacement adds almost nothing new (<strong>word coverage ≥ 0.9</strong> against the existing alt), the verdict is dropped. If coverage is 0.6 or more, or only chart data points are missing, the finding goes to a human instead of being reported as a failure. On the recorded answers, this <strong>removed every false alarm without losing a real problem</strong>.</p>
+      <p class="pull reveal">The cheapest guardrail is the model’s own output, read by plain code.</p>
+
+      <h2 class="reveal"><small>06 · Retrieval</small>A hybrid that was worse than both halves.</h2>
+      <p class="reveal">Every finding links to the WCAG rule it breaks, and an assistant answers questions in plain words. Its search runs over all 87 WCAG 2.2 criteria and their Understanding documents, pulled from W3C’s own GitHub and split along W3C’s sections into 1,092 passages. The eval has 54 golden questions written in the asker’s own words, not W3C’s; 51 are scored, and 3 that name the criterion directly are reported separately because they test the exact-lookup shortcut.</p>
+      <div class="tbl reveal">
+        <table>
+          <thead><tr><th scope="col">Method (51 questions)</th><th scope="col">Hit@1</th><th scope="col">Hit@5</th><th scope="col">MRR</th><th scope="col">Lay phrasing hit@1</th></tr></thead>
+          <tbody>
+            <tr><td>Keyword (BM25)</td><td>71%</td><td>86%</td><td>0.78</td><td>59%</td></tr>
+            <tr><td>Semantic (bge-small)</td><td>71%</td><td>92%</td><td>0.80</td><td>56%</td></tr>
+            <tr><td>Hybrid v1 (passage-level fusion)</td><td>65%</td><td>86%</td><td>0.75</td><td></td></tr>
+            <tr class="hl"><td>Hybrid v2 (criterion-level fusion)</td><td>73%</td><td>92%</td><td>0.81</td><td>62%</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="tbl-cap">README results · raw results for BM25, semantic and hybrid v2 in eval/results/retrieval.json</p>
+      <p class="reveal">The first hybrid fused rankings of individual passages, and it scored below both of its parts. A criterion has many passages, so when keyword and semantic search agreed on a criterion through <strong>different paragraphs</strong>, the agreement never counted. For “aria-live region for announcing search result counts”, both methods ranked 4.1.3 Status Messages first, and hybrid put 1.3.1 first. Fusing rankings of criteria instead of passages fixed it, with a regression test for that exact question. The margins are one or two questions out of 51, so the honest claim is “at least as good”, not “clearly better”.</p>
+      <p class="reveal">Answers are grounded the same way as the findings: the model must copy exact quotes, code checks each quote word for word against the passage, and unverified citations are dropped. If nothing survives, Parity says it couldn’t verify an answer.</p>
+
+      <h2 class="reveal"><small>07 · The open web</small>What real sites broke.</h2>
+      <ul class="lim reveal">
+        <li><b>Carousels fooled the vision model.</b> On Deque’s Mars demo, slides clipped out of view were photographed in place, so Gemini judged the badge on top of them and gave different alt text for the same image. It now judges each image from its own pixels, and repeated slides once.</li>
+        <li><b>Pages without a viewport tag are zoomed out on phones.</b> The contrast meter’s crop landed outside the screenshot and crashed the scan. It now measures through element screenshots, and anything it can’t measure stays with a human instead of breaking the scan.</li>
+        <li><b>SSRF was only checked on the typed URL.</b> Found while fixing the carousel bug: iframes, images and redirects the page loads could still reach internal addresses. Every browser request and the final redirect target are now checked.</li>
+        <li><b>Render’s free CPU timed scans out.</b> Visitors got only an error. Optional checks now stop at 70% of a 240 s budget, the report says what was skipped, and rule results are never lost. Live timings: rules 9.5 s, keyboard 8.7 s, images 50.5 s, contrast 36.4 s.</li>
+        <li><b>Parity audited its own website</b> and found 15 identical “What W3C says” links and tables a keyboard couldn’t scroll. Both are fixed, and a test keeps every page passing its own audit.</li>
+      </ul>
+
+      <h2 class="reveal"><small>08 · Honest limits</small>What these numbers don’t prove.</h2>
+      <ul class="lim reveal">
+        <li><b>The benchmark was built alongside Parity.</b> 100% means it does what it was designed to do, not that it’s perfect on the open web.</li>
+        <li><b>Both benchmarks are small and hand-built.</b> 24 issues and 51 questions are a regression baseline, not a claim about real-world accuracy.</li>
+        <li><b>Consistency checks were tuned on recorded answers.</b> They removed every false alarm there; a different model or new kinds of images can behave differently, which is why one finding still goes to a human.</li>
+        <li><b>It audits single pages.</b> Multi-page crawls, pages behind a login and PDFs are on the roadmap, along with a fixer agent that proposes code changes and re-scans to prove them.</li>
+      </ul>
+
+      <section class="src" aria-labelledby="src">
+        <h2 id="src">Sources in the repo</h2>
+        <ul>
+          <li><a href="https://github.com/MoZainUlAbideen/Parity/blob/main/README.md" target="_blank" rel="noopener">README: milestones, results tables and design</a></li>
+          <li><a href="https://github.com/MoZainUlAbideen/Parity/blob/main/PROGRESS.md" target="_blank" rel="noopener">PROGRESS.md: every bug found and how it was fixed</a></li>
+          <li><a href="https://github.com/MoZainUlAbideen/Parity/blob/main/eval/results/agents.json" target="_blank" rel="noopener">eval/results/agents.json: raw agent results</a></li>
+          <li><a href="https://github.com/MoZainUlAbideen/Parity/blob/main/eval/results/retrieval.json" target="_blank" rel="noopener">eval/results/retrieval.json: raw retrieval results</a></li>
+          <li><a href="https://github.com/MoZainUlAbideen/Parity/blob/main/src/parity/agents/images.py" target="_blank" rel="noopener">src/parity/agents/images.py: the vision agent and its consistency checks</a></li>
+        </ul>
+      </section>
+
+      <nav class="more" aria-label="More engineering notes">
+        <h2>More engineering notes</h2>
+        <a href="earshot-retrieval.html"><span>Earshot</span>The best retriever I built isn’t the one in production.</a>
+        <a href="rehnuma-cited-but-wrong.html"><span>Rehnuma</span>A cited answer can still be wrong.</a>
+      </nav>
+    </article>
+
+    <footer class="wrap end">
+      <p>Want to go through any of this in an interview? Ask me.</p>
+      <div>
+        <a class="pill pill--dark" href="mailto:mu.zainulabideen@gmail.com">Email me <span aria-hidden="true">↗</span></a>
+        <a class="pill" href="../#work">See all projects</a>
+      </div>
+    </footer>
+  </main>
+
+  <div class="tip" id="tip" role="presentation"></div>
+  <script src="notes.js" defer></script>
+</body>
+</html>

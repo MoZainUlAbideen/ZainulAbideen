@@ -10,114 +10,7 @@
   <link rel="preload" href="../fonts/hedvig-serif.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="../fonts/mona-sans.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="../css/fonts.css">
-  <style>
-    :root {
-      --paper: #fffdfc; --paper-2: #f6f2ee; --ink: #151313; --ink-2: #3d3936; --ink-3: #7a736d;
-      --line: rgba(21, 19, 19, .1); --forest: #23473a; --mint: #6fdc9f; --bar: #86bf9b;
-      --serif: "Hedvig Letters Serif", Georgia, serif; --sans: "Mona Sans", system-ui, sans-serif; --mono: "JetBrains Mono", ui-monospace, monospace;
-      --ease: cubic-bezier(.2, .7, .2, 1); --pad: clamp(16px, 4vw, 40px);
-    }
-    *, *::before, *::after { box-sizing: border-box; }
-    html { -webkit-text-size-adjust: 100%; }
-    body { margin: 0; background: var(--paper); color: var(--ink); font: 400 18px/1.7 var(--sans); }
-    a { color: inherit; }
-    ::selection { background: var(--forest); color: var(--paper); }
-
-    .top { position: sticky; top: 0; z-index: 10; display: flex; justify-content: space-between; align-items: center; gap: 12px;
-      padding: 14px var(--pad); background: rgba(255, 253, 252, .82); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
-    .top__mark { text-decoration: none; font: 900 20px/1 var(--sans); font-stretch: 112%; letter-spacing: -.035em; white-space: nowrap; }
-    .top__back { text-decoration: none; font: 500 14px/1 var(--sans); color: var(--ink-2); white-space: nowrap; }
-    .top__back:hover { color: var(--ink); }
-    .bar { position: fixed; left: 0; top: 0; z-index: 11; height: 2px; width: 100%; background: var(--forest); transform-origin: left; transform: scaleX(0); }
-
-    .wrap { width: min(760px, 100%); margin: 0 auto; padding: 0 var(--pad); }
-    .wide { width: min(1040px, 100%); margin: 0 auto; padding: 0 var(--pad); }
-    header.hd { padding: clamp(56px, 9vw, 110px) 0 clamp(28px, 4vw, 44px); }
-    .kicker { margin: 0 0 22px; font: 500 12px/1.5 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); }
-    .kicker b { color: var(--forest); font-weight: 600; }
-    h1 { margin: 0; font: 400 clamp(38px, 6vw, 68px)/1.04 var(--serif); letter-spacing: -.03em; text-wrap: balance; }
-    .dek { margin: 24px 0 0; font-size: clamp(18px, 1.8vw, 21px); line-height: 1.55; color: var(--ink-2); text-wrap: pretty; }
-    .meta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 30px; }
-    .pill { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid rgba(21, 19, 19, .18); text-decoration: none; font: 550 14px/1 var(--sans); }
-    .pill--dark { background: var(--ink); color: var(--paper); border-color: var(--ink); }
-
-    .tldr { margin: 8px 0 0; padding: clamp(20px, 3vw, 30px); border-radius: 20px; background: var(--ink); color: #efe9e2; }
-    .tldr h2 { margin: 0 0 14px; font: 500 12px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--mint); }
-    .tldr ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; font-size: 16.5px; line-height: 1.55; }
-    .tldr li { position: relative; padding-left: 20px; }
-    .tldr li::before { content: ""; position: absolute; left: 0; top: .72em; width: 8px; height: 2px; background: var(--mint); }
-    .tldr b { color: #fff; font-weight: 600; }
-
-    article h2 { margin: clamp(56px, 7vw, 84px) 0 0; font: 400 clamp(28px, 3.4vw, 38px)/1.12 var(--serif); letter-spacing: -.02em; text-wrap: balance; }
-    article h2 small { display: block; margin-bottom: 10px; font: 500 12px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); }
-    article p { margin: 18px 0 0; color: var(--ink-2); text-wrap: pretty; }
-    article p strong { color: var(--ink); font-weight: 600; }
-    code { font: 500 .86em/1 var(--mono); padding: .18em .42em; border-radius: 6px; background: var(--paper-2); color: var(--ink); }
-    .pull { margin: 34px 0 0; padding: 4px 0 4px 22px; border-left: 3px solid var(--forest); font: 400 clamp(22px, 2.4vw, 27px)/1.35 var(--serif); letter-spacing: -.01em; color: var(--ink); }
-
-    /* pipeline diagram */
-    .flow { margin: 30px 0 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; counter-reset: s; }
-    .flow li { list-style: none; position: relative; padding: 14px 14px 16px; border-radius: 14px; background: var(--paper-2); border: 1px solid var(--line); font-size: 14px; line-height: 1.45; color: var(--ink-2); }
-    .flow li b { display: block; margin-bottom: 6px; font: 600 15px/1.25 var(--sans); color: var(--ink); }
-    .flow li::before { counter-increment: s; content: counter(s, decimal-leading-zero); display: block; margin-bottom: 10px; font: 500 11px/1 var(--mono); letter-spacing: .1em; color: var(--ink-3); }
-    .flow li.is-key { background: var(--forest); border-color: var(--forest); color: #d9eadf; }
-    .flow li.is-key b { color: #fff; } .flow li.is-key::before { color: var(--mint); }
-    .flow__cap { margin: 12px 0 0 !important; font: 500 12.5px/1.5 var(--mono) !important; color: var(--ink-3) !important; }
-    @media (max-width: 860px) { .flow { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-
-    /* charts */
-    .charts { margin: 34px 0 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-    .chart { margin: 0; padding: 20px 20px 16px; border-radius: 18px; border: 1px solid var(--line); background: #fff; }
-    .chart h3 { margin: 0; font: 600 15px/1.3 var(--sans); }
-    .chart .sub { margin: 4px 0 18px; font: 500 12px/1.4 var(--mono); color: var(--ink-3); }
-    .rows { display: grid; gap: 9px; }
-    .row { position: relative; display: grid; grid-template-columns: 118px 1fr 44px; align-items: center; gap: 10px; font-size: 13.5px; color: var(--ink-2); cursor: default; }
-    .row .track { position: relative; height: 18px; }
-    .row .fill { position: absolute; inset: 0 auto 0 0; width: calc(var(--v) * 100%); background: var(--bar); border-radius: 0 4px 4px 0; transform-origin: left; transform: scaleX(0); transition: transform 1s var(--ease), background .2s; }
-    .chart.is-in .fill { transform: scaleX(1); }
-    .row:nth-child(2) .fill { transition-delay: .06s; } .row:nth-child(3) .fill { transition-delay: .12s; } .row:nth-child(4) .fill { transition-delay: .18s; } .row:nth-child(5) .fill { transition-delay: .24s; }
-    .row.is-best .fill { background: var(--forest); }
-    .row.is-prod .fill { background: repeating-linear-gradient(135deg, var(--bar) 0 6px, #a9d3b8 6px 9px); }
-    .row b { font: 600 13px/1 var(--mono); color: var(--ink); text-align: right; }
-    .row:hover .fill { background: var(--ink); }
-    .row .tag { margin-left: 6px; font: 600 9.5px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; padding: 3px 5px; border-radius: 4px; background: var(--paper-2); color: var(--forest); }
-    .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 16px 0 0; font: 500 12px/1.3 var(--sans); color: var(--ink-3); }
-    .legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -2px; background: var(--bar); }
-    .legend i.best { background: var(--forest); }
-    .legend i.prod { background: repeating-linear-gradient(135deg, var(--bar) 0 4px, #a9d3b8 4px 6px); }
-    .tip { position: fixed; z-index: 20; pointer-events: none; padding: 8px 10px; border-radius: 8px; background: var(--ink); color: #f3efe9; font: 500 12px/1.4 var(--mono); opacity: 0; transform: translateY(4px); transition: opacity .15s, transform .15s; white-space: nowrap; }
-    .tip.on { opacity: 1; transform: none; }
-    @media (max-width: 760px) { .charts { grid-template-columns: 1fr; } .row { grid-template-columns: 104px 1fr 40px; } }
-
-    /* tables */
-    .tbl { margin: 26px 0 0; overflow-x: auto; border: 1px solid var(--line); border-radius: 16px; background: #fff; }
-    table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
-    th, td { padding: 11px 14px; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--line); }
-    th:first-child, td:first-child { text-align: left; }
-    thead th { font: 600 11px/1.2 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); background: var(--paper-2); }
-    tbody tr:last-child td { border-bottom: 0; }
-    td { font-variant-numeric: tabular-nums; color: var(--ink-2); }
-    tr.hl td { background: rgba(35, 71, 58, .06); color: var(--ink); font-weight: 550; }
-    .tbl-cap { margin: 10px 0 0 !important; font: 500 12.5px/1.5 var(--mono) !important; color: var(--ink-3) !important; }
-
-    .lim { margin: 26px 0 0; padding: 0; list-style: none; display: grid; gap: 12px; }
-    .lim li { padding: 16px 18px; border-radius: 14px; background: var(--paper-2); font-size: 16px; line-height: 1.55; color: var(--ink-2); }
-    .lim li b { color: var(--ink); }
-
-    .src { margin: clamp(60px, 8vw, 90px) 0 0; padding: 26px 0 0; border-top: 1px solid var(--line); }
-    .src h2 { margin: 0 0 12px; font: 500 12px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); }
-    .src ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; font-size: 15px; }
-    .src a { color: var(--ink-2); text-underline-offset: 3px; }
-    .src a:hover { color: var(--ink); }
-
-    .end { margin: clamp(56px, 8vw, 96px) 0 0; padding: clamp(28px, 4vw, 44px) 0 clamp(40px, 6vw, 64px); border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 18px; }
-    .end p { margin: 0; font: 400 clamp(22px, 2.6vw, 30px)/1.2 var(--serif); }
-    .end div { display: flex; flex-wrap: wrap; gap: 10px; }
-
-    .reveal { opacity: 0; transform: translateY(14px); transition: opacity .7s var(--ease), transform .7s var(--ease); }
-    .reveal.is-in { opacity: 1; transform: none; }
-    @media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; } .fill { transform: none !important; transition: none !important; } .bar { display: none; } }
-  </style>
+  <link rel="stylesheet" href="notes.css">
 </head>
 <body>
   <div class="bar" id="bar" aria-hidden="true"></div>
@@ -272,6 +165,12 @@
           <li><a href="https://github.com/MoZainUlAbideen/Earshot/blob/main/src/earshot/api.py" target="_blank" rel="noopener">src/earshot/api.py: the RERANK flag and its reasoning</a></li>
         </ul>
       </section>
+
+      <nav class="more" aria-label="More engineering notes">
+        <h2>More engineering notes</h2>
+        <a href="rehnuma-cited-but-wrong.html"><span>Rehnuma</span>A cited answer can still be wrong.</a>
+        <a href="parity-doubt.html"><span>Parity</span>Adding AI made my auditor worse, until it learned to doubt itself.</a>
+      </nav>
     </article>
 
     <footer class="wrap end">
@@ -284,18 +183,6 @@
   </main>
 
   <div class="tip" id="tip" role="presentation"></div>
-  <script>
-    // reading-progress bar, reveal on scroll, bar-chart tooltips
-    const bar = document.getElementById('bar');
-    const onScroll = () => { const m = document.documentElement.scrollHeight - innerHeight; bar.style.transform = `scaleX(${m > 0 ? scrollY / m : 0})`; };
-    addEventListener('scroll', onScroll, { passive: true }); onScroll();
-    const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); } }), { threshold: .15 });
-    document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
-    const tip = document.getElementById('tip');
-    document.querySelectorAll('[data-tip]').forEach((row) => {
-      row.addEventListener('pointermove', (e) => { tip.textContent = row.dataset.tip; tip.style.left = Math.min(e.clientX + 14, innerWidth - tip.offsetWidth - 8) + 'px'; tip.style.top = (e.clientY + 16) + 'px'; tip.classList.add('on'); });
-      row.addEventListener('pointerleave', () => tip.classList.remove('on'));
-    });
-  </script>
+  <script src="notes.js" defer></script>
 </body>
 </html>

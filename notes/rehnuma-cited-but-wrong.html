@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>A cited answer can still be wrong · Muhammad Zain ul Abideen</title>
+  <meta name="description" content="Engineering notes on Rehnuma, an Urdu/English copilot for Pakistani electricity bills: a deterministic audit engine around a vision model, Urdu retrieval from 0% to 83%, and the confident, cited, wrong answer that changed the design.">
+  <meta name="theme-color" content="#fffdfc">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23151313'/%3E%3Ctext x='32' y='44' font-family='Georgia,serif' font-size='36' fill='%23fffdfc' text-anchor='middle'%3Ez%3C/text%3E%3C/svg%3E">
+  <link rel="preload" href="../fonts/hedvig-serif.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../fonts/mona-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="../css/fonts.css">
+  <link rel="stylesheet" href="notes.css">
+</head>
+<body>
+  <div class="bar" id="bar" aria-hidden="true"></div>
+  <nav class="top" aria-label="Site">
+    <a class="top__mark" href="../" aria-label="Zain-ul-Abideen, home">ZAIN-UL-ABIDEEN</a>
+    <a class="top__back" href="../#approach">← Back to the portfolio</a>
+  </nav>
+
+  <main>
+    <header class="hd wrap">
+      <p class="kicker"><b>Engineering notes</b> · Rehnuma · September 2026 · 9 min read</p>
+      <h1>A cited answer can still be wrong.</h1>
+      <p class="dek">Rehnuma reads a photo of a Pakistani electricity bill, re-computes it rupee by rupee, explains it in Urdu and answers questions about NEPRA’s rules with the clause they come from. This is how it keeps a language model away from arithmetic, how Urdu retrieval went from 0% to 83%, and the one answer that was cited, confident and wrong.</p>
+      <div class="meta">
+        <a class="pill pill--dark" href="https://rehnuma-kappa.vercel.app" target="_blank" rel="noopener">Try Rehnuma <span aria-hidden="true">↗</span></a>
+        <a class="pill" href="https://github.com/MoZainUlAbideen/rehnuma" target="_blank" rel="noopener">Source on GitHub <span aria-hidden="true">↗</span></a>
+      </div>
+    </header>
+
+    <div class="wrap reveal">
+      <section class="tldr" aria-labelledby="tldr">
+        <h2 id="tldr">The short version</h2>
+        <ul>
+          <li><b>The model never does arithmetic.</b> A deterministic engine re-computes every rupee; the vision model only reads, and failed checks trigger a re-read.</li>
+          <li>The engine found a <b>real Rs 2 inconsistency</b> printed on a real bill, and a brute-force search showed no tax rule can produce it.</li>
+          <li>Urdu questions found the right NEPRA clause <b>0% of the time</b> with keyword search. An LLM rewrite fused as a second query took Urdu top-5 retrieval to <b>83%</b>.</li>
+          <li>The family’s own question got a <b>cited, confident, wrong</b> answer. The fix was structural, not a prompt tweak.</li>
+          <li>Across every summary model tested, <b>zero invented numbers reached a user</b>, because a critic rejects any number the engine didn’t produce.</li>
+        </ul>
+      </section>
+    </div>
+
+    <article class="wrap">
+      <h2 class="reveal"><small>01 · The problem</small>A one-page bill almost nobody can read.</h2>
+      <p class="reveal">A Pakistani electricity bill stacks slab rates, protected-consumer status, fuel adjustments, quarterly adjustments, fixed charges, duty and GST onto one page, and most people ask the lineman what it means. Solar households also face NEPRA’s 2026 Prosumer Regulations, which changed what exported units are worth. The people who need help most read Urdu, not regulatory English.</p>
+      <p class="reveal">That sets two hard constraints. Every rupee shown to a user must be right, because a wrong number on a bill is worse than no explanation. And every rule must come with the clause it’s from, because “the AI said so” isn’t something a household can take to their DISCO.</p>
+      <p class="pull reveal">The design rule: the LLM never does arithmetic, and never has the last word on a fact.</p>
+    </article>
+
+    <div class="wide">
+      <ol class="flow reveal" aria-label="Rehnuma pipeline">
+        <li><b>Read the photo</b>Gemini extracts the bill into a schema with no field for names, addresses or reference numbers.</li>
+        <li class="is-key"><b>Audit</b>A deterministic engine recomputes every line; failed checks send the photo back for a re-read.</li>
+        <li><b>Explain</b>An LLM writes the Urdu summary; a critic rejects any number the engine didn’t produce.</li>
+        <li><b>Route</b>Rules, not an LLM, decide if a question is about this bill, NEPRA’s rules, or both.</li>
+        <li class="is-key"><b>Cite</b>Hybrid retrieval over 566 NEPRA clauses, an answer, and a critic that checks tags, numbers and language.</li>
+      </ol>
+      <p class="flow__cap wrap" style="padding:0">Highlighted: the two places where plain code checks the model’s work before a user sees it.</p>
+    </div>
+
+    <article class="wrap">
+      <h2 class="reveal"><small>02 · The audit engine</small>Re-computing a bill rupee by rupee.</h2>
+      <p class="reveal">The engine recomputes units from meter readings, the net-metering bank, electricity duty, GST, the fuel-adjustment tax cascade and arrears, using exact decimals. On three conventional IESCO bills it reproduces <strong>every tax line with zero delta</strong>, and each rule it encodes is tested against a rejected alternative. Electricity duty, for example, is 1.5% of the cost of electricity plus the quarterly adjustment, and including the fixed-charge surcharge would print 192 where the bill prints 169.</p>
+      <p class="reveal">Then it found something real. On a March 2026 PESCO bill, the fuel-adjustment lines add up to Rs 1,166 but the printed total is <strong>Rs 1,164</strong>. Computing unrounded and rounding once reproduces the total exactly, which implies duty of about 14.57, not the 16 printed. A brute-force search over duty rates, GST bases and rounding orders found <strong>no rule that prints all three numbers together</strong>: the bill contradicts itself. The engine flags it, and a test requires every real bill to fail exactly its documented anomalies.</p>
+      <p class="reveal">How it was found matters too. The first transcription read the duty as 15 and everything passed. The bill’s owner checked the paper, corrected it to 16, and the check failed. <strong>The label was corrected, not the tolerance.</strong></p>
+      <p class="reveal">On 2,000 synthetic bills with planted errors, the engine caught every one with zero false alarms.</p>
+
+      <h2 class="reveal"><small>03 · The vision loop</small>A model that calculated instead of copying.</h2>
+      <p class="reveal">Gemini reads the photo; the engine checks the reading. Any failed check triggers a targeted re-read. On the first real run, 6 of 7 bills were read with <strong>96.2% field accuracy and 100% on key fields</strong>.</p>
+      <p class="reveal">Two bugs here were subtle. The re-read prompt first leaked the expected value (“expected 3273”), which would let the model copy the answer instead of reading it; it now names the failing fields only. And on a settlement month, the model <strong>calculated</strong> the net-metering bank (previous balance minus net units) instead of copying the printed 0. The engine caught it, but the re-read repeated the same calculation, so the prompt and the re-read feedback now say the bank is copied, never computed.</p>
+
+      <h2 class="reveal"><small>04 · Urdu retrieval</small>From 0% to 83%, and why concatenation failed.</h2>
+      <p class="reveal">Rule questions search 566 clause-level chunks from five official NEPRA PDFs with lexical hybrid retrieval (BM25 plus character n-grams). The eval has 35 questions with a gold clause each: 22 dev questions seen while tuning, and 13 held-out questions written from the clause text <strong>before any tuning</strong>. 8 are in Urdu, the product’s default language.</p>
+      <p class="reveal">With keyword search alone, Urdu questions found the right clause <strong>0% of the time</strong>: the documents are in English. The fix was an LLM rewrite of the question into NEPRA’s wording. How it was added mattered more than the rewrite itself:</p>
+    </article>
+
+    <div class="wide">
+      <div class="charts">
+        <figure class="chart reveal">
+          <h3>Urdu questions · right clause in top 5</h3>
+          <p class="sub">dev split, n = 6 · one question moves this by 17 points</p>
+          <div class="rows">
+            <div class="row" style="--v:0" data-tip="No rewrite · Urdu hit@5 0%"><span>No rewrite</span><div class="track"><i class="fill"></i></div><b>0%</b></div>
+            <div class="row" style="--v:.67" data-tip="Rewrite Urdu only · Urdu hit@5 67%"><span>Rewrite (ur)</span><div class="track"><i class="fill"></i></div><b>67%</b></div>
+            <div class="row" style="--v:.67" data-tip="Rewrite all, concatenated · Urdu hit@5 67%"><span>Concatenated</span><div class="track"><i class="fill"></i></div><b>67%</b></div>
+            <div class="row" style="--v:.67" data-tip="Rewrite all, fused (RRF) · Urdu hit@5 67%"><span>Fused</span><div class="track"><i class="fill"></i></div><b>67%</b></div>
+            <div class="row is-best" style="--v:.83" data-tip="Fused, names stripped, new prompt · Urdu hit@5 83% · production"><span>Final <em class="tag">live</em></span><div class="track"><i class="fill"></i></div><b>83%</b></div>
+          </div>
+        </figure>
+        <figure class="chart reveal">
+          <h3>English questions · right clause in top 5</h3>
+          <p class="sub">dev split, n = 16 · same settings</p>
+          <div class="rows">
+            <div class="row" style="--v:.88" data-tip="No rewrite · English hit@5 88%"><span>No rewrite</span><div class="track"><i class="fill"></i></div><b>88%</b></div>
+            <div class="row" style="--v:.88" data-tip="Rewrite Urdu only · English unchanged at 88%"><span>Rewrite (ur)</span><div class="track"><i class="fill"></i></div><b>88%</b></div>
+            <div class="row is-prod" style="--v:.75" data-tip="Rewrite all, concatenated · English hit@5 fell to 75%"><span>Concatenated</span><div class="track"><i class="fill"></i></div><b>75%</b></div>
+            <div class="row" style="--v:.81" data-tip="Rewrite all, fused (RRF) · English hit@5 81%"><span>Fused</span><div class="track"><i class="fill"></i></div><b>81%</b></div>
+            <div class="row is-best" style="--v:.94" data-tip="Fused, names stripped, new prompt · English hit@5 94% · production"><span>Final <em class="tag">live</em></span><div class="track"><i class="fill"></i></div><b>94%</b></div>
+          </div>
+        </figure>
+      </div>
+      <div class="wrap" style="padding:0">
+        <p class="legend"><span><i class="best"></i>Shipped design</span><span><i class="prod"></i>The setting that made English worse</span><span><i></i>Other settings</span></p>
+      </div>
+    </div>
+
+    <article class="wrap">
+      <p class="reveal"><strong>Concatenating</strong> the question and its rewrite into one query diluted the user’s own precise words and dropped English hit@5 from 88% to 75%. <strong>Fusing</strong> them as two separate queries lets the rewrite add candidates without removing any. Then reading the rewrites showed the model appending document names (“NEPRA Consumer Service Manual”) to 6 of 27 English rewrites; those words occur all over the corpus and pulled answers toward billing clauses. They’re now stripped before searching.</p>
+      <p class="reveal">One correction along the way: Reciprocal Rank Fusion produces exact ties, and 4 of 27 English questions tied at rank 1, broken by the order of chunks in the file. Some earlier top-1 numbers were partly that luck. Ties now break on BM25 rank of the user’s own words, a test shuffles the corpus and requires identical results, and every number here uses the new tie-break.</p>
+      <p class="reveal">Rewrites were generated once and <strong>replayed</strong> for every setting after the first, so the rows differ only in retrieval, not in LLM sampling. Multilingual e5-small embeddings were tested too; they didn’t beat lexical retrieval in English, so they stay optional.</p>
+
+      <h2 class="reveal"><small>05 · The failure that mattered</small>The family’s question, answered wrong with a citation.</h2>
+      <p class="reveal">The held-out scores looked good. The important failure wasn’t in them. The question that started the project, asked in Urdu by the household whose bills these are: <em>“my net metering was installed before 2026, at what rate are my units counted now?”</em></p>
+      <p class="reveal">Rehnuma answered confidently, with a citation: the price stays under the old 2015 rules until the agreement ends, citing 2015 regulation 14(2). <strong>That’s wrong.</strong> The real rule is Prosumer Regulations 2026, 21(2): billing moves to net billing from the next cycle, with exports priced at the national average <em>power</em> purchase price until the agreement expires.</p>
+      <p class="reveal">There were two causes. Retrieval returned five clauses of the repealed 2015 rules and missed 21(2). And each repealed source carried a note from my own metadata, a paraphrase of what it meant, which the model repeated as if it were NEPRA’s text. The fix was structural: the note no longer states any rule; every repealed document names its <strong>savings clause</strong>, which is always added next to any clause from it; and the critic rejects an answer that relies on a repealed source without citing that clause.</p>
+      <p class="reveal">Then a second, quieter bug. The English answer became exactly right, but the Urdu one said the national average <em>energy</em> purchase price. In Urdu, the two legally different rates collapse into near-identical phrases, and the critic couldn’t see it because the numbers and citations were correct. Now rate names must appear verbatim in English inside any answer that discusses a price, checked against exactly what the model was shown.</p>
+      <p class="pull reveal">The critic proved the answer was cited. Only reading it proved the answer was wrong.</p>
+      <div class="tbl reveal">
+        <table>
+          <thead><tr><th scope="col">Rule questions (fifth run)</th><th scope="col">n</th><th scope="col">Answered</th><th scope="col">First draft passed</th><th scope="col">Cites gold clause</th></tr></thead>
+          <tbody>
+            <tr class="hl"><td>Held-out, English</td><td>11</td><td>100%</td><td>64%</td><td>91%</td></tr>
+            <tr class="hl"><td>Held-out, Urdu</td><td>2</td><td>100%</td><td>100%</td><td>100%</td></tr>
+            <tr><td>Dev, English</td><td>16</td><td>88%</td><td>75%</td><td>93%</td></tr>
+            <tr><td>Dev, Urdu</td><td>6</td><td>67%</td><td>67%</td><td>100%</td></tr>
+            <tr><td>Out of scope (should refuse)</td><td>6</td><td colspan="3" style="text-align:left">Refused 6 of 6</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="tbl-cap">Groq gpt-oss-120b · held-out questions written before tuning, never tuned on · docs/POLICY_EVAL.md</p>
+      <p class="reveal">Reading the drafts behind those failures found three more critic bugs: the sentence splitter broke on “Rs.” and “etc.”; a correct sentence was rejected for having its citation on the neighbouring sentence; and the retry prompt didn’t show the model its own draft, so a correct first draft was thrown away and rewritten wrong. Each one is fixed and tested.</p>
+
+      <h2 class="reveal"><small>06 · Summaries</small>Zero invented numbers, and a model that wrote “cat”.</h2>
+      <p class="reveal">The Urdu summary a household sees is written by an LLM and checked by a critic that allows only numbers the engine produced. If a draft fails three times, a template summary is used instead. Across every model tested on 7 real bills, <strong>no invented number reached a user</strong>.</p>
+      <div class="tbl reveal">
+        <table>
+          <thead><tr><th scope="col">Model (Urdu, 7 real bills)</th><th scope="col">First draft passed critic</th><th scope="col">Fell back to template</th></tr></thead>
+          <tbody>
+            <tr><td>allam-2-7b</td><td>14.3%</td><td>57.1%</td></tr>
+            <tr class="hl"><td>openai/gpt-oss-120b (production)</td><td>100%</td><td>0%</td></tr>
+            <tr><td>qwen/qwen3.8-27b</td><td>100%</td><td>0%</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="tbl-cap">docs/SUMMARY_EVAL.md · allam from round 1 (Urdu-only rerun), the other two under critic v2 · gpt-oss-120b chosen for being 2× faster at the same score</p>
+      <p class="reveal">The score table alone suggested two causes for allam’s failures, and both were wrong. Reading the drafts showed broken Urdu: repetition loops, “بلی” (cat) for “بل” (bill), and this month’s settlement reported as the account balance. It also showed that the critic can pass nonsense: one draft had every number right but swapped peak and off-peak. And both large models made the same false claim, “your credit is kept until 24 September”, which was <strong>my bug</strong>: the prompt passed the due date on credit bills. It no longer does.</p>
+
+      <h2 class="reveal"><small>07 · Honest limits</small>What these numbers don’t prove.</h2>
+      <ul class="lim reveal">
+        <li><b>The critic checks numbers and citations, not meaning.</b> A summary can pass with every number right and the meaning wrong. Human review by a native Urdu reader is the current safeguard, and so far that’s one reader.</li>
+        <li><b>The Urdu samples are tiny.</b> 6 dev and 2 held-out questions: one question moves a row by 17 to 50 points. Read them as direction, not precision.</li>
+        <li><b>Questions, labels and router rules share an author.</b> Real user questions are the real test.</li>
+        <li><b>A number can be checked against the wrong sub-clause.</b> The critic asks whether a number appears anywhere in the cited clause; the eval’s “cites gold clause” column is what catches the rest.</li>
+        <li><b>The 12-month forecast has no accuracy number yet</b> (n = 0) until same-household bill pairs exist, and a solar rupee forecast was dropped after “last year’s rupees” missed by 68%.</li>
+      </ul>
+
+      <h2 class="reveal"><small>08 · Engineering</small>Evals as a build gate.</h2>
+      <p class="reveal">319 tests. Twenty eval metrics that need no API key are gated in CI against committed limits, so a metric that drops or disappears fails the build. A weekly workflow re-downloads NEPRA’s PDFs, compares SHA-256 hashes, and opens a review issue on any change; nothing updates itself. Langfuse traces every question from the API through routing, retrieval, each LLM call and the critic’s verdict, with long numbers masked and photos never sent. Bill photos are read in memory and never stored, and a test enforces that labels carry no identifiers.</p>
+
+      <section class="src" aria-labelledby="src">
+        <h2 id="src">Sources in the repo</h2>
+        <ul>
+          <li><a href="https://github.com/MoZainUlAbideen/rehnuma/blob/main/README.md" target="_blank" rel="noopener">README: architecture, results and engineering</a></li>
+          <li><a href="https://github.com/MoZainUlAbideen/rehnuma/blob/main/docs/POLICY_EVAL.md" target="_blank" rel="noopener">docs/POLICY_EVAL.md: retrieval experiments and all six answer runs</a></li>
+          <li><a href="https://github.com/MoZainUlAbideen/rehnuma/blob/main/docs/FINDINGS.md" target="_blank" rel="noopener">docs/FINDINGS.md: what real bills revealed, including the Rs 2 anomaly</a></li>
+          <li><a href="https://github.com/MoZainUlAbideen/rehnuma/blob/main/docs/SUMMARY_EVAL.md" target="_blank" rel="noopener">docs/SUMMARY_EVAL.md: summary models, rejected drafts and critic v2</a></li>
+          <li><a href="https://github.com/MoZainUlAbideen/rehnuma/blob/main/docs/PROGRESS.md" target="_blank" rel="noopener">docs/PROGRESS.md: milestone log, including the vision-loop bugs</a></li>
+        </ul>
+      </section>
+
+      <nav class="more" aria-label="More engineering notes">
+        <h2>More engineering notes</h2>
+        <a href="earshot-retrieval.html"><span>Earshot</span>The best retriever I built isn’t the one in production.</a>
+        <a href="parity-doubt.html"><span>Parity</span>Adding AI made my auditor worse, until it learned to doubt itself.</a>
+      </nav>
+    </article>
+
+    <footer class="wrap end">
+      <p>Want to go through any of this in an interview? Ask me.</p>
+      <div>
+        <a class="pill pill--dark" href="mailto:mu.zainulabideen@gmail.com">Email me <span aria-hidden="true">↗</span></a>
+        <a class="pill" href="../#work">See all projects</a>
+      </div>
+    </footer>
+  </main>
+
+  <div class="tip" id="tip" role="presentation"></div>
+  <script src="notes.js" defer></script>
+</body>
+</html>
