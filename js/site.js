@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────
-//  Page behaviour: boot sequence, contribution snake, custom cursor, project cards,
+//  Page behaviour: boot sequence, football bots, custom cursor, project cards,
 //  sections from data.js, scroll reveals, and the My Academy games.
 // ─────────────────────────────────────────────────────────────
 import { PROJECTS, EXPERIENCE, STACK, CERTS, BEYOND } from './data.js';
@@ -50,103 +50,181 @@ const host = (url) => url.replace(/^https?:\/\//, '').replace(/\/$/, '');
   addEventListener('keydown', finish, { once: true });
 })();
 
-// ───────── hero: contribution graph with a snake eating its way through ─────────
-// Not interactive. The snake path-finds (BFS) to the nearest commit, eats it,
-// and when the board is clear a fresh year of commits fades back in.
-(function snake() {
-  const cv = $('#snake'); if (!cv) return;
+// ───────── hero: two bots passing a football ─────────
+// Not interactive. A side-on mini pitch: one bot winds up and kicks, the ball
+// rolls (or is lobbed) across, the other traps it and plays it back.
+(function pitch() {
+  const cv = $('#pitch'); if (!cv) return;
   const ctx = cv.getContext('2d');
-  const LEVELS = ['#ebe6e1', '#c3dfcc', '#86bf9b', '#3f8f63', '#23473a'];
-  const ROWS = 7;
-  let cols = 0, cell = 0, gap = 0, dpr = 1, grid = [], fade = [], body = [], path = [], last = 0, stepMs = 120, prog = 0, wait = 0;
-  const rnd = (() => { let x = 20260619; return () => ((x = (x * 1103515245 + 12345) % 2147483648) / 2147483648); })();
-  const fill = () => {
-    grid = Array.from({ length: ROWS * cols }, () => { const r = rnd(); return r < .38 ? 0 : r < .62 ? 1 : r < .8 ? 2 : r < .93 ? 3 : 4; });
-    fade = grid.map(() => 0);
+  const W = 520, H = 290, GY = 236, R = 11;              // logical canvas, ground line, ball radius
+  const INK = '#1b1919', FOREST = '#23473a', MINT = '#6fdc9f';
+  const bots = [
+    { x: 118, face: 1, color: INK, num: '01', blinkAt: 1.3, blink: 0, flash: 0 },
+    { x: 402, face: -1, color: FOREST, num: '02', blinkAt: 2.6, blink: 0, flash: 0 },
+  ];
+  const footX = (b) => b.x + b.face * 40;
+  const counter = $('#passes');
+  let dpr = 1, scale = 1, passes = 0, kicker = 0, phase = 'hold', pt = 0, lob = false, last = 0, time = 0;
+  const ball = { x: footX(bots[0]), y: GY - R, spin: 0, x0: 0, x1: 0 };
+  const dust = [];
+  const HOLD = 0.62, FLY = 1.25, FLY_LOB = 1.5;
+
+  const size = () => {
+    const w = cv.parentElement.clientWidth; dpr = Math.min(2, devicePixelRatio || 1);
+    scale = w / W; cv.width = Math.round(w * dpr); cv.height = Math.round(H * scale * dpr);
+    cv.style.width = w + 'px'; cv.style.height = Math.round(H * scale) + 'px';
   };
-  const layout = () => {
-    const w = cv.parentElement.clientWidth;
-    gap = w < 420 ? 3 : 4;
-    cell = w < 420 ? 13 : w < 560 ? 19 : 22;
-    cols = Math.max(12, Math.floor((w + gap) / (cell + gap)));
-    cell = (w - gap * (cols - 1)) / cols;                // stretch to the exact width
-    const hgt = ROWS * cell + (ROWS - 1) * gap;
-    dpr = Math.min(2, devicePixelRatio || 1);
-    cv.width = Math.round(w * dpr); cv.height = Math.round(hgt * dpr);
-    cv.style.width = w + 'px'; cv.style.height = hgt + 'px';
-    fill();
-    const r = 3; body = Array.from({ length: 6 }, (_, k) => ({ c: 5 - k, r })); path = [];
+  const rr = (x, y, w, h, r) => { ctx.beginPath(); ctx.roundRect(x, y, w, h, r); };
+  const ease = (t) => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+  // leg angle (radians, + = forward) for a bot at this moment
+  const legOf = (i) => {
+    const flyDur = lob ? FLY_LOB : FLY;
+    if (phase === 'hold') {
+      if (i !== kicker) return 0;
+      const t = pt / HOLD;
+      if (t < .78) return -0.65 * ease(t / .78) + 0.22 * (1 - t / .78) * (pt < .15 ? 1 : 0);
+      return -0.65 + 1.45 * ease((t - .78) / .22);           // snap through the ball
+    }
+    if (i === kicker) return pt < .32 ? 0.8 * (1 - ease(pt / .32)) : 0;
+    const left = flyDur - pt;                                   // receiver lifts a foot to trap
+    return left < .28 ? 0.22 * ease(1 - left / .28) : 0;
   };
-  const idx = (c, r) => r * cols + c;
-  const free = (c, r) => c >= 0 && r >= 0 && c < cols && r < ROWS && !body.slice(0, -1).some((b) => b.c === c && b.r === r);
-  const plan = () => {
-    const h = body[0], seen = new Map([[idx(h.c, h.r), null]]), q = [h];
-    while (q.length) {
-      const p = q.shift();
-      if ((p !== h) && grid[idx(p.c, p.r)] > 0) { const out = []; let k = idx(p.c, p.r); while (k !== idx(h.c, h.r)) { out.unshift({ c: k % cols, r: (k / cols) | 0 }); k = seen.get(k); } return out; }
-      for (const [dc, dr] of [[1, 0], [0, 1], [-1, 0], [0, -1]]) {
-        const n = { c: p.c + dc, r: p.r + dr }, k = idx(n.c, n.r);
-        if (free(n.c, n.r) && !seen.has(k)) { seen.set(k, idx(p.c, p.r)); q.push(n); }
+
+  const kick = () => {
+    passes += 1; if (counter) counter.textContent = String(passes).padStart(3, '0');
+    const k = bots[kicker]; k.flash = 0.45;
+    lob = passes % 3 === 0;
+    ball.x0 = footX(k); ball.x1 = footX(bots[1 - kicker]);
+    for (let n = 0; n < 7; n++) dust.push({ x: ball.x0, y: GY - 2, vx: (Math.random() - .5) * 60 - k.face * 25, vy: -Math.random() * 40 - 10, life: 0.5, r: 2 + Math.random() * 3 });
+    phase = 'fly'; pt = 0;
+  };
+
+  const step = (dt) => {
+    time += dt; pt += dt;
+    bots.forEach((b) => {
+      b.flash = Math.max(0, b.flash - dt);
+      if (time > b.blinkAt) { b.blink = 0.14; b.blinkAt = time + 2.2 + Math.random() * 2.6; }
+      b.blink = Math.max(0, b.blink - dt);
+    });
+    if (phase === 'hold') {
+      ball.x = footX(bots[kicker]); ball.y = GY - R;
+      if (pt >= HOLD) kick();
+    } else {
+      const dur = lob ? FLY_LOB : FLY, t = clamp(pt / dur, 0, 1);
+      const px = ball.x;
+      if (lob) {
+        ball.x = ball.x0 + (ball.x1 - ball.x0) * (t < .82 ? t / .82 * .93 : .93 + .07 * ease((t - .82) / .18));
+        const a = t < .82 ? t / .82 : 0, b2 = t >= .82 ? (t - .82) / .18 : 0;
+        ball.y = GY - R - (t < .82 ? 4 * 92 * a * (1 - a) : 4 * 12 * b2 * (1 - b2));
+      } else {
+        ball.x = ball.x0 + (ball.x1 - ball.x0) * (1 - Math.pow(1 - t, 1.8));
+        ball.y = GY - R - Math.abs(Math.sin(t * Math.PI * 2)) * 10 * Math.pow(1 - t, 2);
       }
+      ball.spin += (ball.x - px) / R;
+      if (pt >= dur) { kicker = 1 - kicker; phase = 'hold'; pt = 0; }
     }
-    return [];
+    for (let n = dust.length - 1; n >= 0; n--) { const d = dust[n]; d.life -= dt; d.x += d.vx * dt; d.y += d.vy * dt; d.vy += 90 * dt; if (d.life <= 0) dust.splice(n, 1); }
   };
-  const step = () => {
-    if (wait > 0) { wait--; return; }
-    if (!path.length) path = plan();
-    if (!path.length) {                                  // board cleared: new commits fade in
-      if (grid.every((v) => v === 0)) { fill(); fade = grid.map(() => 1); wait = 4; }
-      return;
-    }
-    const n = path.shift();
-    body.unshift(n); body.pop();
-    const k = idx(n.c, n.r);
-    if (grid[k] > 0) { grid[k] = 0; if (body.length < 11) body.push({ ...body[body.length - 1] }); }
+
+  const drawPitch = () => {
+    const sky = ctx.createLinearGradient(0, 0, 0, GY);
+    sky.addColorStop(0, '#ffffff'); sky.addColorStop(1, '#f4f1ec');
+    ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+    // grass band with mowing stripes
+    const top = GY - 16;
+    for (let i = 0; i < 10; i++) { ctx.fillStyle = i % 2 ? '#d5e7d9' : '#e0eee3'; ctx.fillRect(i * W / 10, top, W / 10 + 1, H - top); }
+    ctx.fillStyle = 'rgba(35,71,58,.08)'; ctx.fillRect(0, top, W, 2);
+    // halfway line + spot, faint
+    ctx.strokeStyle = 'rgba(255,255,255,.9)'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(W / 2, top + 3); ctx.lineTo(W / 2, H); ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(W / 2, GY + 18, 46, 10, 0, 0, Math.PI * 2); ctx.stroke();
+    // little goals behind each bot
+    [[22, 1], [W - 22, -1]].forEach(([gx, d]) => {
+      ctx.strokeStyle = 'rgba(27,25,25,.16)'; ctx.lineWidth = 1;
+      for (let k = 1; k < 5; k++) { ctx.beginPath(); ctx.moveTo(gx, GY - k * 15); ctx.lineTo(gx - d * 14, GY - k * 15 + 4); ctx.stroke(); }
+      ctx.strokeStyle = 'rgba(27,25,25,.35)'; ctx.lineWidth = 3; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(gx, GY); ctx.lineTo(gx, GY - 76); ctx.lineTo(gx - d * 14, GY - 72); ctx.lineTo(gx - d * 14, GY + 2); ctx.stroke();
+    });
   };
-  const rr = (x, y, w, hh, r) => { ctx.beginPath(); ctx.roundRect(x, y, w, hh, r); ctx.fill(); };
+
+  const drawBot = (b, i) => {
+    const leg = legOf(i), bob = Math.sin(time * 5 + i * 2) * 1.6, hipY = -38;
+    const eye = clamp(((ball.x - b.x) * b.face) / 70, -1, 1) * 3;
+    ctx.save(); ctx.translate(b.x, GY); ctx.scale(b.face, 1);
+    // shadow
+    ctx.fillStyle = 'rgba(21,19,19,.12)'; ctx.beginPath(); ctx.ellipse(4, 2, 34, 5, 0, 0, Math.PI * 2); ctx.fill();
+    const limb = (ang, px, len, w, footOut) => {
+      ctx.save(); ctx.translate(px, hipY + bob * .3); ctx.rotate(-ang);
+      ctx.fillStyle = b.color; rr(-w / 2, 0, w, len, w / 2); ctx.fill();
+      if (footOut) { rr(-w / 2 - 2, len - 7, w + 15, 10, 5); ctx.fill(); ctx.fillStyle = 'rgba(255,255,255,.18)'; rr(-w / 2 - 2, len, w + 15, 3, 2); ctx.fill(); }
+      ctx.restore();
+    };
+    limb(0, -11, 36, 12, true);                                   // standing leg
+    // body
+    const by = hipY - 50 + bob;
+    ctx.fillStyle = b.color; rr(-28, by, 56, 54, 16); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,.1)'; rr(-17, by + 12, 34, 20, 6); ctx.fill();
+    ctx.save(); ctx.scale(b.face, 1); ctx.fillStyle = 'rgba(255,255,255,.85)';
+    ctx.font = '600 11px "JetBrains Mono", monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(b.num, 0, by + 22.5); ctx.restore();
+    // arms swing against the kicking leg
+    [[-30, 1], [30, -1]].forEach(([ax, s]) => {
+      ctx.save(); ctx.translate(ax * .93, by + 12); ctx.rotate(leg * .55 * s + Math.sin(time * 5 + i) * .05);
+      ctx.fillStyle = b.color; rr(-5, 0, 10, 30, 5); ctx.fill(); ctx.restore();
+    });
+    limb(leg, 11, 36, 12, true);                                  // kicking leg, in front
+    // neck + head
+    const hy = by - 48;
+    ctx.fillStyle = b.color; rr(-7, hy + 40, 14, 10, 3); ctx.fill();
+    rr(-33, hy, 66, 44, 15); ctx.fill();
+    ctx.fillStyle = '#0c0b0b'; rr(-25, hy + 8, 50, 26, 10); ctx.fill();
+    const open = b.blink > 0 ? 0.15 : 1;
+    ctx.fillStyle = MINT; ctx.shadowColor = MINT; ctx.shadowBlur = 8;
+    [-10, 10].forEach((ex) => { const eh = 10 * open; rr(ex - 4 + eye, hy + 21 - eh / 2, 8, Math.max(1.5, eh), 3); ctx.fill(); });
+    ctx.shadowBlur = 0;
+    // antenna
+    ctx.strokeStyle = b.color; ctx.lineWidth = 3; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(0, hy); ctx.lineTo(-4, hy - 14); ctx.stroke();
+    ctx.fillStyle = b.flash > 0 ? MINT : '#cfd8d2'; if (b.flash > 0) { ctx.shadowColor = MINT; ctx.shadowBlur = 12; }
+    ctx.beginPath(); ctx.arc(-4, hy - 17, 4.5, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0;
+    ctx.restore();
+  };
+
+  const drawBall = () => {
+    const h = GY - R - ball.y;
+    ctx.fillStyle = `rgba(21,19,19,${.16 - Math.min(.1, h / 900)})`;
+    ctx.beginPath(); ctx.ellipse(ball.x, GY + 1, R * (1 - Math.min(.45, h / 220)), 3, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.save(); ctx.translate(ball.x, ball.y);
+    ctx.beginPath(); ctx.arc(0, 0, R, 0, Math.PI * 2); ctx.fillStyle = '#fff'; ctx.fill(); ctx.save(); ctx.clip();
+    ctx.rotate(ball.spin); ctx.fillStyle = INK;
+    const pent = (cx, cy, r, rot) => { ctx.beginPath(); for (let k = 0; k < 5; k++) { const a = rot + k * Math.PI * 2 / 5; ctx.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r); } ctx.closePath(); ctx.fill(); };
+    pent(0, 0, R * .36, -Math.PI / 2);
+    for (let k = 0; k < 5; k++) { const a = -Math.PI / 2 + k * Math.PI * 2 / 5 + Math.PI / 5; pent(Math.cos(a) * R * 1.02, Math.sin(a) * R * 1.02, R * .34, a); }
+    ctx.restore();
+    ctx.strokeStyle = INK; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.arc(0, 0, R, 0, Math.PI * 2); ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.beginPath(); ctx.arc(-R * .35, -R * .4, R * .22, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  };
+
   const draw = () => {
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, cv.width, cv.height);
-    const rad = Math.max(2, cell * .2);
-    for (let r = 0; r < ROWS; r++) for (let c = 0; c < cols; c++) {
-      const k = idx(c, r), f = fade[k];
-      ctx.fillStyle = LEVELS[0]; rr(c * (cell + gap), r * (cell + gap), cell, cell, rad);
-      if (grid[k] > 0) { ctx.globalAlpha = 1 - f; ctx.fillStyle = LEVELS[grid[k]]; rr(c * (cell + gap), r * (cell + gap), cell, cell, rad); ctx.globalAlpha = 1; }
-      if (f > 0) fade[k] = Math.max(0, f - .03 - (c / cols) * .01);
-    }
-    // the snake: one thick rounded line through the segment centres; the head
-    // and tail glide between cells so the motion is continuous
-    const C = (q) => ({ x: q.c * (cell + gap) + cell / 2, y: q.r * (cell + gap) + cell / 2 });
-    const lerp = (p, q, t) => ({ x: p.x + (q.x - p.x) * t, y: p.y + (q.y - p.y) * t });
-    const n = body.length, pts = [lerp(C(body[1]), C(body[0]), prog)];
-    for (let i = 1; i < n - 1; i++) pts.push(C(body[i]));
-    pts.push(lerp(C(body[n - 1]), C(body[n - 2]), prog));
-    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-    ctx.strokeStyle = 'rgba(21,19,19,.14)'; ctx.lineWidth = cell * .78;
-    ctx.beginPath(); pts.forEach((q, i) => (i ? ctx.lineTo(q.x, q.y + 2) : ctx.moveTo(q.x, q.y + 2))); ctx.stroke();
-    ctx.strokeStyle = '#151313'; ctx.lineWidth = cell * .66;
-    ctx.beginPath(); pts.forEach((q, i) => (i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y))); ctx.stroke();
-    const hd = pts[0], nx = pts[1], ang = Math.atan2(hd.y - nx.y, hd.x - nx.x);
-    ctx.fillStyle = '#151313'; ctx.beginPath(); ctx.arc(hd.x, hd.y, cell * .42, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#fffdfc';
-    for (const side of [-1, 1]) {
-      const ex = hd.x + Math.cos(ang) * cell * .14 + Math.cos(ang + side * Math.PI / 2) * cell * .17;
-      const ey = hd.y + Math.sin(ang) * cell * .14 + Math.sin(ang + side * Math.PI / 2) * cell * .17;
-      ctx.beginPath(); ctx.arc(ex, ey, Math.max(1.2, cell * .075), 0, Math.PI * 2); ctx.fill();
-    }
+    ctx.setTransform(dpr * scale, 0, 0, dpr * scale, 0, 0);
+    drawPitch();
+    dust.forEach((d) => { ctx.fillStyle = `rgba(120,140,125,${d.life * 1.2})`; ctx.beginPath(); ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2); ctx.fill(); });
+    drawBot(bots[0], 0); drawBot(bots[1], 1);
+    drawBall();
   };
+
   let on = true;
   new IntersectionObserver(([e]) => { on = e.isIntersecting; }).observe(cv);
-  const loop = (t) => {
+  const loop = (now) => {
     requestAnimationFrame(loop);
-    if (!on) { last = t; return; }
-    if (!last) last = t;
-    prog += (t - last) / stepMs; last = t;
-    while (prog >= 1) { prog -= 1; step(); }
-    draw();
+    const dt = Math.min(0.05, (now - (last || now)) / 1000); last = now;
+    if (!on || document.hidden) return;
+    step(dt); draw();
   };
-  layout(); draw();
-  let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { layout(); draw(); }, 150); });
+  size(); step(0); draw();
+  let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { size(); draw(); }, 120); });
   if (!reduced) requestAnimationFrame(loop);
 })();
 

@@ -137,7 +137,7 @@ a { color: inherit; }
 .hero__stats b { font: 400 34px/1 var(--serif); letter-spacing: -.02em; }
 .hero__stats span { font: 500 11.5px/1.2 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
 
-/* contribution graph + snake (where the portrait used to be) */
+/* football bots card (where the portrait used to be) */
 .contrib {
   margin: 0; width: 100%; padding: clamp(18px, 2.2vw, 28px); border-radius: 22px; background: #fff;
   border: 1px solid var(--line); box-shadow: 0 40px 80px -48px rgba(21, 19, 19, .35);
@@ -149,10 +149,11 @@ a { color: inherit; }
 .contrib__board { width: 100%; }
 .contrib__board canvas { display: block; }
 .contrib__foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 16px; font: 500 11.5px/1 var(--mono); color: var(--ink-3); }
-.contrib__legend { display: inline-flex; align-items: center; gap: 4px; }
-.contrib__legend i { width: 11px; height: 11px; border-radius: 3px; background: #ebe6e1; }
-.contrib__legend i:nth-child(2) { background: #c3dfcc; } .contrib__legend i:nth-child(3) { background: #86bf9b; }
-.contrib__legend i:nth-child(4) { background: #3f8f63; } .contrib__legend i:nth-child(5) { background: #23473a; }
+.contrib__legend { display: inline-flex; align-items: center; gap: 6px; }
+.contrib__legend i { width: 10px; height: 10px; border-radius: 50%; margin-left: 6px; }
+.contrib__legend i.k1 { background: #1b1919; } .contrib__legend i.k2 { background: #23473a; }
+.contrib__sub b { font-weight: 600; color: var(--ink); }
+.contrib__board canvas { border-radius: 14px; }
 @keyframes rec { 50% { opacity: .35; } }
 @media (max-width: 520px) { .contrib__foot > span:first-child { display: none; } .contrib__foot { justify-content: flex-end; } }
 
