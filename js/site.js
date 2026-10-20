@@ -414,7 +414,7 @@ const host = (url) => url.replace(/^https?:\/\//, '').replace(/\/$/, '');
     h('div', { class: 'pcard__copy' }, copyEl(p, i)),
     h('div', { class: `pcard__visual tint-${p.tint}` }, visualEl(p)))));
 
-  // pinned player (desktop), after refactr.net: the stage holds still, the copy
+  // pinned player (laptop and phone), after refactr.net: the stage holds still, the copy
   // wipes from one project to the next, and each screenshot rises from below
   // the screen and covers the one before it (a thin edge of it stays visible).
   const N = PROJECTS.length;
@@ -438,12 +438,14 @@ const host = (url) => url.replace(/^https?:\/\//, '').replace(/\/$/, '');
 
   const ease = (x) => 1 - Math.pow(1 - x, 3);
   const clamp = (x) => Math.min(1, Math.max(0, x));
+  const stacked = matchMedia('(max-width: 640px), (max-width: 1000px) and (orientation: portrait)');
   let active = 0;
   const update = () => {
     if (getComputedStyle(pin).display === 'none') return;
     const r = pin.getBoundingClientRect(), span = pin.offsetHeight - innerHeight;
     const t = clamp(-r.top / span) * (N - 1);       // 0 … N-1
-    const lift = visBox.offsetHeight + innerHeight * 0.1;   // start just below the screen
+    // desktop: rise from below the screen; phones: rise from the bottom of the clipped screenshot window
+    const lift = stacked.matches ? visBox.offsetHeight + 24 : innerHeight - visBox.getBoundingClientRect().top + 20;
     cards.forEach((c, k) => {
       // card k rises during the middle of the step before it, then holds
       const enter = k === 0 ? 1 : ease(clamp((t - (k - 1) - 0.2) / 0.6));

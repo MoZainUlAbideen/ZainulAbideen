@@ -264,6 +264,7 @@ a { color: inherit; }
 .tint-sky   { --bg: radial-gradient(70% 60% at 80% 15%, #f3e7d3, transparent 70%), linear-gradient(160deg, #9fb7d8, #4a5f8c 80%); }
 .tint-dawn  { --bg: radial-gradient(70% 60% at 25% 20%, #ffe0b5, transparent 70%), linear-gradient(160deg, #b9c9e8, #5b6fa8 80%); }
 .tint-dusk  { --bg: radial-gradient(70% 60% at 75% 20%, #c5a3e8, transparent 70%), linear-gradient(160deg, #6b4c9a, #1f1533 80%); }
+.tint-teal  { --bg: radial-gradient(70% 60% at 75% 18%, #d9ece4, transparent 70%), linear-gradient(160deg, #5f8f84, #17332f 82%); }
 .tint-stone { --bg: radial-gradient(70% 60% at 30% 20%, #efe6d8, transparent 70%), linear-gradient(160deg, #b9ad9b, #5d564c 85%); }
 .shot { width: 100%; border-radius: 12px; overflow: hidden; background: #fff; box-shadow: 0 30px 60px -25px rgba(0, 0, 0, .55), 0 0 0 1px rgba(255, 255, 255, .25); transform: rotate(-1.2deg); transition: transform .5s var(--ease); }
 .pcard:hover .shot { transform: rotate(0) scale(1.01); }
@@ -402,9 +403,9 @@ a { color: inherit; }
 .pin__stage {
   position: sticky; top: 0; height: 100vh; overflow: clip;
   display: grid; grid-template-columns: minmax(0, .82fr) minmax(0, 1.18fr);
-  gap: clamp(32px, 5vw, 80px); padding: 82px 0 22px;
+  gap: clamp(32px, 5vw, 80px); padding: 92px 0 32px;
 }
-.pin__copy { position: relative; align-self: center; height: min(420px, calc(100vh - 110px)); }
+.pin__copy { position: relative; align-self: center; height: min(440px, calc(100vh - 130px)); max-width: 440px; }
 .pin__item { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; pointer-events: none; }
 .pin__item.is-on { pointer-events: auto; }
 /* each line wipes in from below, and out upwards (refactr-style) */
@@ -426,7 +427,7 @@ a { color: inherit; }
 .pin__links { margin-top: 24px; }
 .pin__visuals { position: relative; height: 100%; }
 .pin__card {
-  position: absolute; inset: calc(var(--k) * 9px) 0 0 0; border-radius: 10px; overflow: hidden; isolation: isolate;
+  position: absolute; inset: calc(min(var(--k), 3) * 7px) 0 0 0; border-radius: 14px; overflow: hidden; isolation: isolate;
   display: grid; place-items: center; padding: clamp(28px, 5%, 64px);
   box-shadow: 0 -10px 40px -24px rgba(21, 19, 19, .45), 0 0 0 1px rgba(21, 19, 19, .06);
   will-change: transform;
@@ -447,9 +448,43 @@ a { color: inherit; }
 }
 .work__head { margin-bottom: 0; }
 
-@media (min-width: 901px) and (min-height: 480px) {
+@media (min-width: 641px) and (min-height: 480px), (max-width: 640px) and (min-height: 560px) {
   .pin { display: block; }
   #projects { display: none; }
+}
+
+/* phones and tablets: the same scroll-through, stacked. Screenshot on top in a
+   clipped window (the next one rises from its bottom edge), copy underneath. */
+@media (max-width: 640px), (max-width: 1000px) and (orientation: portrait) {
+  .pin { --vis: clamp(220px, 43svh, 370px); height: calc(var(--n, 7) * 92svh); }
+  .pin__stage {
+    height: 100svh; grid-template-columns: minmax(0, 1fr); grid-template-rows: var(--vis) minmax(0, 1fr);
+    grid-template-areas: "vis" "copy"; gap: 22px; padding: 78px 0 18px;
+  }
+  .pin__visuals { grid-area: vis; height: var(--vis); overflow: hidden; border-radius: 16px; }
+  .pin__card { inset: calc(min(var(--k), 3) * 5px) 0 0 0; padding: 14px; border-radius: 16px; }
+  .pin__card .shot { width: min(100%, calc((var(--vis) - 58px) * 1.58)); border-radius: 9px; }
+  .pin__card .shot__bar { height: 20px; padding: 0 8px; } .pin__card .shot__bar i { width: 6px; height: 6px; }
+  .pin__card .shot__bar span { font-size: 9.5px; }
+  .pin__card .pipe li { padding: 9px 12px; font-size: 13.5px; } .pin__card .pipe li + li { margin-top: 12px; }
+  .pin__card .pipe li + li::before { top: -12px; height: 12px; }
+  .pin__copy { grid-area: copy; align-self: stretch; height: auto; max-width: none; }
+  .pin__item { justify-content: flex-start; }
+  .pin__kicker { margin-bottom: 10px; font-size: 11px; }
+  .pin__name { font-size: clamp(30px, 8.6vw, 40px); }
+  .pin__tag { margin-top: 8px; max-width: 34ch; font-size: 15.5px; line-height: 1.45; }
+  .pin__metric { margin-top: 14px; gap: 2px 8px; }
+  .pin__metric s { font-size: 17px; } .pin__metric b { font-size: 25px; }
+  .pin__metric span { font-size: 10.5px; }
+  .pin__links { margin-top: 16px; }
+  .pin__links .pcard__links { flex-wrap: wrap; }
+  .pin__links .pcard__links a { height: 36px; padding: 0 14px; font-size: 13.5px; }
+  .work__head { margin-bottom: 0; }
+}
+@media (max-width: 640px) and (max-height: 700px) {
+  .pin { --vis: clamp(190px, 36svh, 260px); }
+  .pin__stage { gap: 16px; padding-top: 70px; }
+  .pin__tag { font-size: 14.5px; }
 }
 
 
@@ -542,3 +577,21 @@ a { color: inherit; }
 /* hero role label: a touch larger than the section eyebrows */
 .eyebrow--hero { font-size: 14.5px; color: var(--ink-2); gap: 11px; }
 .eyebrow--hero .dot { width: 8px; height: 8px; }
+
+/* tablets: keep the side-by-side layout, a little tighter */
+@media (min-width: 641px) and (max-width: 1000px) and (orientation: landscape) {
+  .pin__stage { grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 28px; }
+  .pin__name { font-size: clamp(32px, 4.6vw, 44px); }
+  .pin__tag { font-size: 16px; }
+  .pin__card { padding: 22px; }
+  .pin__card .shot { width: 100%; }
+}
+
+/* portrait tablets: stacked like a phone, with room for a bigger screenshot */
+@media (min-width: 641px) and (max-width: 1000px) and (orientation: portrait) {
+  .pin { --vis: clamp(280px, 46svh, 540px); }
+  .pin__card { padding: 26px; }
+  .pin__name { font-size: 46px; }
+  .pin__tag { font-size: 17px; }
+  .pin__stage { padding-top: 92px; gap: 30px; }
+}

@@ -86,6 +86,20 @@ export const PROJECTS = [
     shot: 'assets/projects/edgariq.jpg', tint: 'dusk',
   },
   {
+    name: 'Dafa',
+    kind: 'Legal RAG',
+    tagline: 'Pakistan’s law, section by section, in English, Urdu or Roman Urdu.',
+    metric: { from: '0.76', to: '0.97', label: 'hit@5 on dev questions · held-out 0.58, published' },
+    points: [
+      'Font-aware PDF extraction of the Constitution (328 articles) and Penal Code (639 sections) with zero numbering gaps, each section joined to its CrPC Schedule II row: bailable, cognizable, trial court.',
+      'BM25 with a Roman Urdu glossary and an LLM rewrite; “dafa 302” opens instantly with no model call, and the site falls back to search-only when the free tier is busy.',
+      'A deterministic checker verifies every citation, quote and “N years” against the official text, with one repair round; 24 bugs logged, each with a regression test.',
+    ],
+    tech: ['Python', 'PyMuPDF', 'BM25', 'FastAPI'],
+    live: 'https://dafa-ten.vercel.app', repo: `${GH}/Dafa`,
+    shot: 'assets/projects/dafa.jpg', tint: 'teal',
+  },
+  {
     name: 'Job Assistant',
     kind: 'RAG + browser extension',
     tagline: 'A Chrome extension and dashboard that scores how well your resume fits a job.',
