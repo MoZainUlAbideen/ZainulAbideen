@@ -353,12 +353,6 @@ const host = (url) => url.replace(/^https?:\/\//, '').replace(/\/$/, '');
   if (!reduced) requestAnimationFrame(loop);
 })();
 
-// ───────── top-left wordmark: hidden while the hero name is visible ─────────
-(function nameSwap() {
-  const who = $('#hero-who'), nav = $('#nav'); if (!who || !nav) return;
-  new IntersectionObserver(([e]) => nav.classList.toggle('is-name-visible', e.isIntersecting), { rootMargin: '-60px 0px 0px 0px' }).observe(who);
-})();
-
 // ───────── custom cursor: a crosshair that opens into a ring over anything clickable ─────────
 (function cursor() {
   if (!matchMedia('(hover: hover) and (pointer: fine)').matches || reduced) return;
@@ -532,12 +526,27 @@ $('#certs').append(...CERTS.map((c) => h('li', { class: 'reveal' }, h('a', { hre
 (function reveals() {
   const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); } }), { rootMargin: '0px 0px -8% 0px' });
   document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
-  const links = [...document.querySelectorAll('.nav__links a[href^="#"]')];
-  const spy = new IntersectionObserver((es) => es.forEach((e) => {
-    if (!e.isIntersecting) return;
-    links.forEach((a) => a.classList.toggle('is-here', a.getAttribute('href') === `#${e.target.id}`));
-  }), { rootMargin: '-45% 0px -50% 0px' });
-  ['work', 'academy', 'experience', 'stack', 'beyond'].forEach((id) => spy.observe(document.getElementById(id)));
+  // scroll-spy: the last section whose top has passed 35% of the screen is "here".
+  // Works for very tall sections (the pinned projects) and ones with no menu item
+  // (credentials counts as Stack). At the very bottom, the last item wins.
+  const links = [...document.querySelectorAll('.nav__links a[href^="#"], .mmenu a[href^="#"]')];
+  const SECTIONS = [['top', 'top'], ['academy', 'academy'], ['work', 'work'], ['approach', 'approach'],
+    ['experience', 'experience'], ['stack', 'stack'], ['credentials', 'stack'], ['beyond', 'beyond']]
+    .map(([id, nav]) => [document.getElementById(id), nav]).filter(([el]) => el);
+  let here = '';
+  const spy = () => {
+    const probe = innerHeight * .35;
+    let cur = 'top';
+    for (const [el, nav] of SECTIONS) if (el.getBoundingClientRect().top <= probe) cur = nav;
+    if (innerHeight + scrollY >= document.documentElement.scrollHeight - 4) cur = 'beyond';
+    if (cur === here) return;
+    here = cur;
+    links.forEach((a) => a.classList.toggle('is-here', a.getAttribute('href') === `#${cur}`));
+  };
+  let raf = 0;
+  addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; spy(); }); }, { passive: true });
+  addEventListener('resize', spy);
+  spy();
 })();
 
 // ───────── demo video: play only while visible ─────────

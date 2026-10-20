@@ -603,16 +603,32 @@ a { color: inherit; }
 .hero__role { position: relative; padding-left: 13px; font: 500 13px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
 .hero__role::before { content: ""; position: absolute; left: 0; top: 50%; width: 4px; height: 4px; margin-top: -2px; border-radius: 50%; background: var(--ink-3); }
 
-/* hero profile strip: who, at a glance (under the bots, above the stats) */
-.hero__profile { margin: 0; display: grid; grid-template-columns: 1.25fr 1fr 1fr 1fr; gap: 14px 18px; padding: 18px 4px 0; border-top: 1px solid var(--line); }
-.hero__profile div { display: grid; gap: 5px; align-content: start; }
-.hero__profile dt { font: 500 10.5px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
-.hero__profile dd { margin: 0; font: 600 14px/1.3 var(--sans); color: var(--ink); white-space: nowrap; }
-.hero__profile dd i { display: inline-block; width: 7px; height: 7px; margin-right: 6px; border-radius: 50%; background: #3fbf7f; vertical-align: 1px; animation: rec 2s ease-in-out infinite; }
-.hero__side { gap: 20px; }
-.hero__side .hero__stats { padding-top: 18px; }
-@media (max-width: 560px) { .hero__profile { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
-/* top-left wordmark hides while the hero name is on screen, then returns */
-.nav__logo { transition: opacity .35s var(--ease), transform .35s var(--ease); }
-.nav.is-name-visible .nav__logo { opacity: 0; transform: translateY(-6px); pointer-events: none; }
+/* nav: no wordmark, links sit on the right */
+.nav { justify-content: flex-end; }
+.nav__links a { position: relative; }
+.nav__links a.is-here { background: #fff; color: var(--forest); font-weight: 600; box-shadow: 0 0 0 1px rgba(35, 71, 58, .14), 0 6px 18px -8px rgba(35, 71, 58, .55); }
+.nav__links a.is-here::after { content: ""; position: absolute; left: 50%; bottom: 3px; width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: #3fbf7f; box-shadow: 0 0 8px 1px rgba(63, 191, 127, .8); }
+.mmenu a.is-here { background: var(--paper-2); color: var(--forest); font-weight: 600; }
+
+/* hero identity card: dark panel right under the name */
+.hero__card {
+  margin: 0 0 30px; display: grid; grid-template-columns: repeat(4, auto); justify-content: start; gap: 0;
+  width: fit-content; max-width: 100%; padding: 16px 6px; border-radius: 16px;
+  background: var(--ink); color: #f3efe9; box-shadow: 0 24px 48px -30px rgba(21, 19, 19, .6);
+}
+.hero__card div { display: grid; gap: 7px; padding: 0 20px; }
+.hero__card div + div { border-left: 1px solid rgba(255, 255, 255, .14); }
+.hero__card dt { font: 500 10.5px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: rgba(243, 239, 233, .55); }
+.hero__card dd { margin: 0; font: 600 17px/1.2 var(--sans); white-space: nowrap; }
+.hero__card dd i { display: inline-block; width: 8px; height: 8px; margin-right: 7px; border-radius: 50%; background: #3fbf7f; box-shadow: 0 0 10px 1px rgba(63, 191, 127, .7); vertical-align: 1px; animation: rec 2s ease-in-out infinite; }
+.hero__who { margin-bottom: 16px; }
+.hero__h { font-size: clamp(40px, 4.6vw, 66px); }
+@media (max-width: 560px) {
+  .hero__card { grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; padding: 6px; }
+  .hero__card div { padding: 12px 14px; }
+  .hero__card div + div { border-left: 0; }
+  .hero__card div:nth-child(2n) { border-left: 1px solid rgba(255, 255, 255, .14); }
+  .hero__card div:nth-child(n+3) { border-top: 1px solid rgba(255, 255, 255, .14); }
+  .hero__card dd { font-size: 16px; }
+}
