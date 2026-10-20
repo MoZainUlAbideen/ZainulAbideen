@@ -56,7 +56,7 @@ const host = (url) => url.replace(/^https?:\/\//, '').replace(/\/$/, '');
 (function pitch() {
   const cv = $('#pitch'); if (!cv) return;
   const ctx = cv.getContext('2d');
-  const W = 520, H = 250, GY = 236, R = 11, OFF = 40;   // logical canvas, ground line, ball radius; OFF trims the empty space above the bots
+  const W = 520, H = 270, GY = 236, R = 11, OFF = 20;   // logical canvas, ground line, ball radius; OFF trims the empty space above the bots
   const INK = '#1b1919', FOREST = '#23473a', MINT = '#6fdc9f';
   const bots = [
     { x: 118, face: 1, color: INK, num: '01', blinkAt: 1.3, blink: 0, flash: 0 },
@@ -126,6 +126,93 @@ const host = (url) => url.replace(/^https?:\/\//, '').replace(/\/$/, '');
       if (pt >= dur) { kicker = 1 - kicker; phase = 'hold'; pt = 0; }
     }
     for (let n = dust.length - 1; n >= 0; n--) { const d = dust[n]; d.life -= dt; d.x += d.vx * dt; d.y += d.vy * dt; d.vy += 90 * dt; if (d.life <= 0) dust.splice(n, 1); }
+  };
+
+  // ── the crowd: a three-tier stand of thoroughly bored people ──
+  // AI plays, humans watch and wait. Not interactive; every pose moves a little.
+  const SKIN = ['#f2cba8', '#e2ae80', '#c98d5e', '#ab734b', '#8b5b3c', '#6a432f'];
+  const HAIR = ['#1d1916', '#3a2a20', '#5b4131', '#2a2a2a', '#8c8278', '#a0662f'];
+  const SHIRT = ['#5b6b7a', '#8a7f72', '#3e5641', '#a0553f', '#c9a24a', '#4a5a8a', '#6f6c69', '#b8b0a4', '#7a4a5a', '#2f4858', '#d2c7b8'];
+  const SEAT = ['#cfc7bd', '#c4bcb1'];
+  const POSES = ['chin', 'phone', 'sleep', 'yawn', 'slouch', 'stare', 'chin', 'phone', 'sleep'];
+  const seed = (() => { let x = 31337; return () => ((x = (x * 1103515245 + 12345) % 2147483648) / 2147483648); })();
+  const pick = (a) => a[Math.floor(seed() * a.length)];
+  const TIERS = [0, 1, 2].map((k) => {
+    const y = GY - 46 - k * 23, s = 1.22 - k * .1, x0 = 58 - 26 - k * 16, x1 = W - 58 + 26 + k * 16, gap = 25 * s;
+    const n = Math.floor((x1 - x0) / gap), off = (x1 - x0 - (n - 1) * gap) / 2;
+    const people = Array.from({ length: n }, (_, i) => seed() < .24 ? null : ({
+      x: x0 + off + i * gap + (seed() - .5) * 2, skin: pick(SKIN), hair: pick(HAIR), shirt: pick(SHIRT),
+      pose: pick(POSES), ph: seed() * 10, bald: seed() < .12, long: seed() < .28, cap: seed() < .1,
+    }));
+    return { y, s, x0, x1, people, seats: n, gap, off };
+  });
+
+  const drawPerson = (p, y, s) => {
+    const t = time + p.ph;
+    ctx.save(); ctx.translate(p.x, y); ctx.scale(s, s);
+    let hx = 0, hy = -24, tilt = 0, eyes = 'half', torsoY = -17;
+    if (p.pose === 'chin') { tilt = .18 + Math.sin(t * .6) * .04; hx = 1; hy = -23; }
+    if (p.pose === 'phone') { hy = -21; hx = -1; tilt = -.12; eyes = 'down'; }
+    if (p.pose === 'sleep') { tilt = .5 + Math.sin(t * .9) * .06; hx = 3; hy = -21 + Math.sin(t * .9) * .6; eyes = 'shut'; }
+    if (p.pose === 'slouch') { torsoY = -15; hy = -21; tilt = Math.sin(t * .4) * .05; }
+    if (p.pose === 'stare') { tilt = Math.sin(t * .3) * .03; eyes = 'blank'; }
+    const yawning = p.pose === 'yawn' && (t % 7) < 1.6;
+    if (p.pose === 'yawn') { tilt = yawning ? -.22 : .06; eyes = yawning ? 'shut' : 'half'; }
+    // torso + arms
+    ctx.fillStyle = p.shirt; ctx.beginPath(); ctx.roundRect(-6.5, torsoY, 13, 16, [5, 5, 2, 2]); ctx.fill();
+    ctx.strokeStyle = p.shirt; ctx.lineWidth = 3.4; ctx.lineCap = 'round';
+    if (p.pose === 'chin') { ctx.beginPath(); ctx.moveTo(5, torsoY + 10); ctx.lineTo(3.5, hy + 6); ctx.stroke(); }
+    if (p.pose === 'phone') { ctx.beginPath(); ctx.moveTo(-5, torsoY + 6); ctx.lineTo(-1, torsoY + 9); ctx.moveTo(5, torsoY + 6); ctx.lineTo(2, torsoY + 9); ctx.stroke(); }
+    if (p.pose === 'slouch') { ctx.beginPath(); ctx.moveTo(-5.5, torsoY + 8); ctx.lineTo(5.5, torsoY + 9); ctx.stroke(); }
+    if (yawning) { ctx.beginPath(); ctx.moveTo(-5, torsoY + 3); ctx.lineTo(-8, hy - 6); ctx.moveTo(5, torsoY + 3); ctx.lineTo(8, hy - 6); ctx.stroke(); }
+    // head
+    ctx.save(); ctx.translate(hx, hy); ctx.rotate(tilt);
+    if (p.long && !p.cap) { ctx.fillStyle = p.hair; ctx.beginPath(); ctx.roundRect(-6, -5, 12, 12, 5); ctx.fill(); }
+    ctx.fillStyle = p.skin; ctx.beginPath(); ctx.arc(0, 0, 5.4, 0, Math.PI * 2); ctx.fill();
+    if (p.cap) { ctx.fillStyle = p.shirt === '#c9a24a' ? '#23473a' : '#c9a24a'; ctx.beginPath(); ctx.arc(0, -1, 5.6, Math.PI, 0); ctx.fill(); ctx.fillRect(-1, -1.6, 8, 1.8); }
+    else if (!p.bald) { ctx.fillStyle = p.hair; ctx.beginPath(); ctx.arc(0, -.6, 5.6, Math.PI * 1.02, Math.PI * 1.98); ctx.fill(); }
+    ctx.strokeStyle = '#2a2220'; ctx.fillStyle = '#2a2220'; ctx.lineWidth = .9;
+    if (eyes === 'half') { ctx.beginPath(); ctx.moveTo(-3, .4); ctx.lineTo(-1.2, .4); ctx.moveTo(1.2, .4); ctx.lineTo(3, .4); ctx.stroke(); }
+    if (eyes === 'shut') { ctx.beginPath(); ctx.arc(-2.1, .2, 1, 0, Math.PI); ctx.moveTo(3.1, .2); ctx.arc(2.1, .2, 1, 0, Math.PI); ctx.stroke(); }
+    if (eyes === 'down') { ctx.beginPath(); ctx.arc(-2, 1.4, .7, 0, Math.PI * 2); ctx.arc(2, 1.4, .7, 0, Math.PI * 2); ctx.fill(); }
+    if (eyes === 'blank') { ctx.beginPath(); ctx.arc(-2, 0, .7, 0, Math.PI * 2); ctx.arc(2, 0, .7, 0, Math.PI * 2); ctx.fill(); }
+    if (yawning) { ctx.beginPath(); ctx.ellipse(0, 2.8, 1.5, 1.9 + Math.sin((t % 7) / 1.6 * Math.PI) * .6, 0, 0, Math.PI * 2); ctx.fill(); }
+    else { ctx.beginPath(); ctx.moveTo(-1.4, 3); ctx.lineTo(1.4, 3); ctx.stroke(); }    // flat, unimpressed mouth
+    ctx.restore();
+    if (p.pose === 'chin') { ctx.fillStyle = p.skin; ctx.beginPath(); ctx.arc(3, hy + 5.4, 2.1, 0, Math.PI * 2); ctx.fill(); }
+    if (p.pose === 'phone') {                                         // a phone, glowing, obviously more interesting
+      ctx.shadowColor = 'rgba(160,200,255,.9)'; ctx.shadowBlur = 6; ctx.fillStyle = '#dfeaff';
+      ctx.beginPath(); ctx.roundRect(-2.4, torsoY + 6.6, 5, 3.4, .8); ctx.fill(); ctx.shadowBlur = 0;
+      ctx.fillStyle = p.skin; ctx.beginPath(); ctx.arc(-2.4, torsoY + 9.6, 1.3, 0, Math.PI * 2); ctx.arc(2.8, torsoY + 9.6, 1.3, 0, Math.PI * 2); ctx.fill();
+    }
+    if (p.pose === 'sleep') {                                         // drifting z's, drawn as zig-zags
+      ctx.strokeStyle = 'rgba(42,34,32,.55)'; ctx.lineWidth = .9; ctx.lineJoin = 'miter';
+      for (let k = 0; k < 2; k++) {
+        const q = ((t * .45 + k * .5) % 1), zx = hx + 6 + q * 6, zy = hy - 6 - q * 14, zs = 1.6 + q * 1.4;
+        ctx.globalAlpha = 1 - q; ctx.beginPath(); ctx.moveTo(zx - zs, zy - zs); ctx.lineTo(zx + zs, zy - zs); ctx.lineTo(zx - zs, zy + zs); ctx.lineTo(zx + zs, zy + zs); ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+    }
+    ctx.restore();
+  };
+
+  const drawStands = () => {
+    for (let k = TIERS.length - 1; k >= 0; k--) {
+      const T = TIERS[k];
+      // tier step: tread + riser
+      ctx.fillStyle = '#efe9e2'; ctx.beginPath(); ctx.roundRect(T.x0 - 6, T.y - 20 * T.s, T.x1 - T.x0 + 12, 20 * T.s, 3); ctx.fill();
+      ctx.fillStyle = '#ddd5cb'; ctx.fillRect(T.x0 - 6, T.y - 2, T.x1 - T.x0 + 12, 6 * T.s + 2);
+      // seat backs, filled or empty
+      for (let i = 0; i < T.seats; i++) {
+        const x = T.x0 + T.off + i * T.gap;
+        ctx.fillStyle = SEAT[i % 2]; ctx.beginPath(); ctx.roundRect(x - 7.5 * T.s, T.y - 19 * T.s, 15 * T.s, 15 * T.s, 3 * T.s); ctx.fill();
+      }
+      T.people.forEach((p) => p && drawPerson(p, T.y - 1, T.s));
+    }
+    // pitch-side wall with plain panels
+    const y = GY - 46 + 4, x0 = 58 - 30, x1 = W - 58 + 30, n = 9, w = (x1 - x0) / n;
+    for (let i = 0; i < n; i++) { ctx.fillStyle = i % 2 ? '#23473a' : '#e8e2da'; ctx.fillRect(x0 + i * w, y, w + .5, 7); }
+    ctx.fillStyle = 'rgba(21,19,19,.08)'; ctx.fillRect(x0, y + 7, x1 - x0, 1.5);
   };
 
   // a 3D-looking pitch floating on the page: perspective stripes, a slab edge,
@@ -246,6 +333,7 @@ const host = (url) => url.replace(/^https?:\/\//, '').replace(/\/$/, '');
   const draw = () => {
     ctx.setTransform(dpr * scale, 0, 0, dpr * scale, 0, -OFF * dpr * scale);
     ctx.clearRect(0, 0, W, H + OFF);
+    drawStands();
     drawPitch();
     dust.forEach((d) => { ctx.fillStyle = `rgba(120,140,125,${d.life * 1.2})`; ctx.beginPath(); ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2); ctx.fill(); });
     drawBot(bots[0], 0); drawBot(bots[1], 1);
