@@ -693,3 +693,28 @@ a { color: inherit; }
   .idrow.is-open .idrow__chev { transform: rotate(225deg) translate(-2px, -2px); }
 }
 .proof__pitch { margin-top: -6px; }
+
+/* ───────── card v2: pure black, name as MUHAMMAD / ZAIN-UL-ABIDEEN, click-to-open rows ───────── */
+.idcard { background: #000; padding: 26px 24px 16px; }
+.idcard::before { display: none; }
+.idcard__name { margin: 0; display: grid; gap: 6px; }
+.idcard__name small { font: 600 13px/1 var(--sans); letter-spacing: .32em; text-transform: uppercase; color: rgba(243, 239, 233, .62); }
+.idcard__name span { font: 900 clamp(30px, 2.9vw, 40px)/.95 var(--sans); font-stretch: 112%; letter-spacing: -.035em; color: #fff; white-space: nowrap; }
+.idcard__role { margin: 14px 0 18px; }
+/* rows: hover only highlights; a click opens the list in place (one at a time) */
+.idrow { cursor: pointer; border-radius: 10px; transition: background .2s var(--ease); margin: 0 -8px; padding: 14px 12px; }
+.idrow:hover { background: rgba(255, 255, 255, .05); }
+.idrow + .idrow { border-top-color: rgba(255, 255, 255, .1); }
+.idrow__menu, .idrow:hover .idrow__menu, .idrow:focus-within .idrow__menu {
+  position: static; grid-column: 1 / -1; max-height: 0; overflow: hidden; padding: 0 6px; margin: 0 -4px;
+  opacity: 0; transform: none; pointer-events: none; background: #141414;
+  transition: max-height .4s var(--ease), opacity .25s var(--ease), padding .3s var(--ease), margin .3s var(--ease);
+}
+.idrow.is-open .idrow__menu { max-height: 340px; opacity: 1; padding: 6px; margin: 12px -4px 0; pointer-events: auto; }
+.idrow:hover .idrow__chev, .idrow:focus-within .idrow__chev { transform: rotate(45deg) translate(-2px, -2px); }
+.idrow.is-open .idrow__chev { transform: rotate(225deg) translate(-2px, -2px); }
+.idrow.is-open { background: rgba(255, 255, 255, .04); }
+@media (max-width: 420px) { .idcard__name span { font-size: 30px; } }
+/* the card grows downward when a row opens, instead of re-centring */
+.hero__side { align-self: start; margin-top: clamp(12px, 4.5vw, 64px); }
+@media (max-width: 900px) { .hero__side { margin-top: 0; } }

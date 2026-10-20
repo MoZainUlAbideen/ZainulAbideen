@@ -353,17 +353,17 @@ const host = (url) => url.replace(/^https?:\/\//, '').replace(/\/$/, '');
   if (!reduced) requestAnimationFrame(loop);
 })();
 
-// ───────── model card: rows open on hover (desktop) or tap (touch) ─────────
+// ───────── profile card: rows open on click/tap, one at a time ─────────
 (function idcard() {
   const rows = [...document.querySelectorAll('.idrow')]; if (!rows.length) return;
-  rows.forEach((r) => r.addEventListener('click', (e) => {
-    if (e.target.closest('a')) return;                      // let "Open to" links work
-    const open = !r.classList.contains('is-open');
-    rows.forEach((x) => x.classList.remove('is-open'));
-    r.classList.toggle('is-open', open);
-  }));
-  document.addEventListener('click', (e) => { if (!e.target.closest('.idrow')) rows.forEach((x) => x.classList.remove('is-open')); });
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') rows.forEach((x) => { x.classList.remove('is-open'); x.blur(); }); });
+  const set = (r, open) => { r.classList.toggle('is-open', open); r.setAttribute('aria-expanded', String(open)); };
+  const toggle = (r) => { const open = !r.classList.contains('is-open'); rows.forEach((x) => set(x, false)); set(r, open); };
+  rows.forEach((r) => {
+    r.addEventListener('click', (e) => { if (!e.target.closest('a')) toggle(r); });   // "Open to" links still work
+    r.addEventListener('keydown', (e) => { if ((e.key === 'Enter' || e.key === ' ') && e.target === r) { e.preventDefault(); toggle(r); } });
+  });
+  document.addEventListener('click', (e) => { if (!e.target.closest('.idcard')) rows.forEach((x) => set(x, false)); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') rows.forEach((x) => set(x, false)); });
 })();
 
 // ───────── custom cursor: a crosshair that opens into a ring over anything clickable ─────────
