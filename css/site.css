@@ -772,3 +772,25 @@ a { color: inherit; }
 @media (min-width: 901px) {
   .hero__side { justify-items: center; margin-top: -18px; transform: translateX(-4%); }
 }
+
+/* nav as a full-width top bar: items spread edge to edge with thin dividers */
+@media (min-width: 861px) {
+  .nav { top: 0; padding: 0; justify-content: stretch; }
+  .nav__links {
+    width: 100%; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 0; padding: 6px;
+    border-radius: 0; border: 0; border-bottom: 1px solid var(--line);
+    background: rgba(246, 242, 238, .86);
+  }
+  .nav__links a { display: grid; place-items: center; height: 40px; padding: 0 10px; border-radius: 9px; text-align: center; }
+  .nav__links a + a { box-shadow: -1px 0 0 0 var(--line); }
+  .nav__links a.is-here, .nav__links a:hover { box-shadow: 0 0 0 1px rgba(35, 71, 58, .14), 0 6px 18px -8px rgba(35, 71, 58, .55); }
+  .nav__links .nav__cta { margin-left: 6px; }
+  .nav__links .nav__cta + a, .nav__links a + .nav__cta { box-shadow: none; }
+}
+@media (min-width: 861px) {
+  .nav__links a { display: flex; align-items: center; justify-content: center; gap: 5px; white-space: nowrap; }
+  .nav__links a + a { box-shadow: none; }
+  .nav__links a + a::before { content: ""; position: absolute; left: -.5px; top: 30%; height: 40%; width: 1px; background: var(--line-2, rgba(21, 19, 19, .14)); }
+  .nav__links a.is-here::before, .nav__links a.is-here + a::before, .nav__links a:hover::before, .nav__links a:hover + a::before, .nav__links .nav__cta::before { opacity: 0; }
+  .nav__links a:hover:not(.is-here):not(.nav__cta) { box-shadow: none; background: rgba(255, 255, 255, .7); }
+}
