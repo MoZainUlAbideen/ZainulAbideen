@@ -608,14 +608,14 @@ $('#certs').append(...CERTS.map((c) => h('li', { class: 'reveal' }, h('a', { hre
   // (credentials counts as Stack). At the very bottom, the last item wins.
   const links = [...document.querySelectorAll('.nav__links a[href^="#"], .mmenu a[href^="#"]')];
   const SECTIONS = [['top', 'top'], ['academy', 'academy'], ['work', 'work'], ['approach', 'approach'],
-    ['experience', 'experience'], ['stack', 'stack'], ['credentials', 'stack'], ['beyond', 'beyond']]
+    ['experience', 'experience'], ['stack', 'stack'], ['credentials', 'stack'], ['beyond', 'beyond'], ['contact', 'contact']]
     .map(([id, nav]) => [document.getElementById(id), nav]).filter(([el]) => el);
   let here = '';
   const spy = () => {
     const probe = innerHeight * .35;
     let cur = 'top';
     for (const [el, nav] of SECTIONS) if (el.getBoundingClientRect().top <= probe) cur = nav;
-    if (innerHeight + scrollY >= document.documentElement.scrollHeight - 4) cur = 'beyond';
+    if (innerHeight + scrollY >= document.documentElement.scrollHeight - 4) cur = 'contact';
     if (cur === here) return;
     here = cur;
     links.forEach((a) => a.classList.toggle('is-here', a.getAttribute('href') === `#${cur}`));

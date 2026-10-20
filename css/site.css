@@ -827,3 +827,16 @@ a { color: inherit; }
   .nav__links .nav__cta:hover { background: #000; color: var(--paper); }
   .nav__links a:nth-last-child(2) { box-shadow: 1px 0 0 0 var(--line-2, rgba(21, 19, 19, .14)); }
 }
+
+/* nav: eight equal cells again (Contact replaces Résumé) */
+@media (min-width: 861px) { .nav__links { grid-template-columns: none; } }
+
+/* Résumé button on the card, under the name */
+.idcard__cv {
+  display: inline-flex; align-items: center; gap: 8px; width: fit-content; height: 36px; margin-top: 16px; padding: 0 16px;
+  border: 1px solid rgba(255, 255, 255, .35); color: #fff; text-decoration: none; font: 600 14px/1 var(--sans);
+  transition: background .2s var(--ease), color .2s var(--ease), border-color .2s var(--ease);
+}
+.idcard__cv span { color: #9fe0bb; transition: transform .2s var(--ease), color .2s; }
+.idcard__cv:hover { background: #fff; color: #000; border-color: #fff; }
+.idcard__cv:hover span { color: #000; transform: translate(2px, -2px); }
