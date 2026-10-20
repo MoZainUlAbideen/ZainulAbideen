@@ -61,13 +61,7 @@
     <!-- ───────── hero ───────── -->
     <section class="hero">
       <div class="hero__copy">
-        <p class="hero__who" id="hero-who"><span class="dot" aria-hidden="true"></span><b>Muhammad Zain ul Abideen</b><span class="hero__role">AI Engineer</span></p>
-        <dl class="hero__card">
-          <div><dt>Focus</dt><dd>Applied AI &amp; LLMs</dd></div>
-          <div><dt>Scope</dt><dd>Full-stack</dd></div>
-          <div><dt>Based</dt><dd>Islamabad</dd></div>
-          <div><dt>Open to</dt><dd><i aria-hidden="true"></i>AI roles</dd></div>
-        </dl>
+        <p class="eyebrow eyebrow--hero"><span class="dot"></span>AI Engineer · Available for work</p>
         <h1 class="hero__h">I build reliable AI&nbsp;systems, <em>measured before they&nbsp;ship.</em></h1>
         <p class="hero__sub">I take ML and LLM products from prototype to production: retrieval, agents, computer vision and speech. Each one ships with its own evaluation, a deterministic check around the model, and its failure cases in the open.</p>
         <div class="hero__ctas">
@@ -78,17 +72,65 @@
       </div>
 
       <div class="hero__side">
-      <figure class="contrib contrib--bare" aria-label="Animation: two small robots passing a football back and forth">
+      <aside class="idcard" aria-label="Profile card">
+        <div class="idcard__top"><span>Model card</span><span>v2026.10</span></div>
+        <p class="idcard__name">Muhammad Zain<br>ul Abideen</p>
+        <p class="idcard__role">AI Engineer · BEng Electrical, NUST ’26</p>
+        <ul class="idcard__rows">
+          <li class="idrow" tabindex="0" aria-haspopup="true">
+            <span class="idrow__k">Focus</span><span class="idrow__v">Applied AI &amp; LLM systems</span><span class="idrow__chev" aria-hidden="true"></span>
+            <div class="idrow__menu"><ul>
+                <li>RAG &amp; search</li>
+                <li>AI agents</li>
+                <li>Evals &amp; reliability</li>
+                <li>Computer vision</li>
+                <li>Speech &amp; audio</li>
+            </ul></div>
+          </li>
+          <li class="idrow" tabindex="0" aria-haspopup="true">
+            <span class="idrow__k">Scope</span><span class="idrow__v">Full-stack, model to UI</span><span class="idrow__chev" aria-hidden="true"></span>
+            <div class="idrow__menu"><ul>
+                <li>Data &amp; retrieval pipelines</li>
+                <li>Model training &amp; evaluation</li>
+                <li>Backend APIs (FastAPI)</li>
+                <li>Frontends (Next.js)</li>
+                <li>Deployment &amp; CI/CD</li>
+            </ul></div>
+          </li>
+          <li class="idrow idrow--open" tabindex="0" aria-haspopup="true">
+            <span class="idrow__k">Open to</span><span class="idrow__v"><i aria-hidden="true"></i>Full-time &amp; freelance</span><span class="idrow__chev" aria-hidden="true"></span>
+            <div class="idrow__menu"><ul>
+                <li><a href="mailto:mu.zainulabideen@gmail.com?subject=AI%20Engineer%20role">AI Engineer<span aria-hidden="true">↗</span></a></li>
+                <li><a href="mailto:mu.zainulabideen@gmail.com?subject=ML%20Engineer%20role">ML Engineer<span aria-hidden="true">↗</span></a></li>
+                <li><a href="mailto:mu.zainulabideen@gmail.com?subject=Software%20Engineer%20role">Software Engineer<span aria-hidden="true">↗</span></a></li>
+                <li><a href="mailto:mu.zainulabideen@gmail.com?subject=Freelance%20project">Freelance &amp; project-based work<span aria-hidden="true">↗</span></a></li>
+                <li><a href="mailto:mu.zainulabideen@gmail.com?subject=Contract%20work">Contract &amp; consulting<span aria-hidden="true">↗</span></a></li>
+            </ul></div>
+          </li>
+        </ul>
+        <div class="idcard__foot"><span>Hover or tap a row for more</span><a href="#proof">Evals ↓</a></div>
+      </aside>
+      </div>
+    </section>
+
+
+    <!-- ───────── proof: the bots + reliability in plain words ───────── -->
+    <section class="proof" id="proof">
+      <header class="proof__head reveal">
+        <p class="eyebrow">Reliability, in plain words</p>
+        <h2 class="h2">The AI does the work. I make sure it’s right.</h2>
+      </header>
+      <figure class="contrib contrib--bare proof__pitch" aria-label="Animation: two small robots passing a football back and forth">
         <div class="contrib__board">
           <canvas id="pitch" aria-hidden="true"></canvas>
         </div>
       </figure>
-        <ul class="hero__stats">
-          <li><b>0.93</b><span>Recall@5 with reranking<em>Earshot search eval</em></span></li>
-          <li><b>0</b><span>Invented figures reached users<em>Rehnuma bill audits</em></span></li>
-          <li><b>24/24</b><span>Issues caught, zero false alarms<em>Parity WCAG benchmark</em></span></li>
-        </ul>
-      </div>
+      <ul class="proof__stats">
+        <li class="reveal"><b>1,000+</b><p>automated tests across all seven products, so a change that breaks something is caught before it ships.</p></li>
+        <li class="reveal"><b>5 of 7</b><p>products double-check every AI answer against the original source, in plain code, before you see it.</p></li>
+        <li class="reveal"><b>0</b><p>made-up numbers reached a user in Rehnuma’s bill audits. Every figure is recomputed first.</p></li>
+        <li class="reveal"><b>13 / 13</b><p>unsafe or off-topic questions refused instead of guessed, across Dehqan and Rehnuma.</p></li>
+      </ul>
     </section>
 
     <!-- ───────── academy (video) ───────── -->

@@ -353,6 +353,19 @@ const host = (url) => url.replace(/^https?:\/\//, '').replace(/\/$/, '');
   if (!reduced) requestAnimationFrame(loop);
 })();
 
+// ───────── model card: rows open on hover (desktop) or tap (touch) ─────────
+(function idcard() {
+  const rows = [...document.querySelectorAll('.idrow')]; if (!rows.length) return;
+  rows.forEach((r) => r.addEventListener('click', (e) => {
+    if (e.target.closest('a')) return;                      // let "Open to" links work
+    const open = !r.classList.contains('is-open');
+    rows.forEach((x) => x.classList.remove('is-open'));
+    r.classList.toggle('is-open', open);
+  }));
+  document.addEventListener('click', (e) => { if (!e.target.closest('.idrow')) rows.forEach((x) => x.classList.remove('is-open')); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') rows.forEach((x) => { x.classList.remove('is-open'); x.blur(); }); });
+})();
+
 // ───────── custom cursor: a crosshair that opens into a ring over anything clickable ─────────
 (function cursor() {
   if (!matchMedia('(hover: hover) and (pointer: fine)').matches || reduced) return;

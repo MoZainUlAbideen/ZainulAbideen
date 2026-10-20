@@ -611,24 +611,85 @@ a { color: inherit; }
 .nav__links a.is-here::after { content: ""; position: absolute; left: 50%; bottom: 3px; width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: #3fbf7f; box-shadow: 0 0 8px 1px rgba(63, 191, 127, .8); }
 .mmenu a.is-here { background: var(--paper-2); color: var(--forest); font-weight: 600; }
 
-/* hero identity card: dark panel right under the name */
-.hero__card {
-  margin: 0 0 30px; display: grid; grid-template-columns: repeat(4, auto); justify-content: start; gap: 0;
-  width: fit-content; max-width: 100%; padding: 16px 6px; border-radius: 16px;
-  background: var(--ink); color: #f3efe9; box-shadow: 0 24px 48px -30px rgba(21, 19, 19, .6);
+
+/* ───────── hero: model card (who I am, as an ML model card) ───────── */
+.hero__side { display: grid; align-content: center; justify-items: end; }
+.idcard {
+  position: relative; width: min(440px, 100%); padding: 22px 22px 16px; border-radius: 22px;
+  background: radial-gradient(120% 80% at 100% 0%, rgba(111, 220, 159, .12), transparent 60%), var(--ink); color: #f3efe9;
+  box-shadow: 0 50px 90px -50px rgba(21, 19, 19, .75), 0 0 0 1px rgba(255, 255, 255, .04) inset;
+  isolation: isolate;
 }
-.hero__card div { display: grid; gap: 7px; padding: 0 20px; }
-.hero__card div + div { border-left: 1px solid rgba(255, 255, 255, .14); }
-.hero__card dt { font: 500 10.5px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: rgba(243, 239, 233, .55); }
-.hero__card dd { margin: 0; font: 600 17px/1.2 var(--sans); white-space: nowrap; }
-.hero__card dd i { display: inline-block; width: 8px; height: 8px; margin-right: 7px; border-radius: 50%; background: #3fbf7f; box-shadow: 0 0 10px 1px rgba(63, 191, 127, .7); vertical-align: 1px; animation: rec 2s ease-in-out infinite; }
-.hero__who { margin-bottom: 16px; }
-.hero__h { font-size: clamp(40px, 4.6vw, 66px); }
-@media (max-width: 560px) {
-  .hero__card { grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; padding: 6px; }
-  .hero__card div { padding: 12px 14px; }
-  .hero__card div + div { border-left: 0; }
-  .hero__card div:nth-child(2n) { border-left: 1px solid rgba(255, 255, 255, .14); }
-  .hero__card div:nth-child(n+3) { border-top: 1px solid rgba(255, 255, 255, .14); }
-  .hero__card dd { font-size: 16px; }
+.idcard::before { /* faint spec-sheet grid */
+  content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; opacity: .5;
+  background-image: linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
+  background-size: 22px 22px; -webkit-mask-image: linear-gradient(180deg, #000, transparent 70%); mask-image: linear-gradient(180deg, #000, transparent 70%);
 }
+.idcard__top { display: flex; justify-content: space-between; padding-bottom: 14px; border-bottom: 1px dashed rgba(255, 255, 255, .18); font: 500 11px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: #9fe0bb; }
+.idcard__top span + span { color: rgba(243, 239, 233, .45); }
+.idcard__name { margin: 22px 0 0; font: 400 clamp(34px, 3.3vw, 46px)/1.02 var(--serif); letter-spacing: -.02em; }
+.idcard__role { margin: 10px 0 18px; font: 500 12px/1.4 var(--mono); letter-spacing: .06em; color: rgba(243, 239, 233, .6); }
+.idcard__rows { list-style: none; margin: 0; padding: 0; }
+.idrow { position: relative; display: grid; grid-template-columns: 82px 1fr 18px; align-items: center; gap: 10px; padding: 14px 4px; border-top: 1px solid rgba(255, 255, 255, .1); cursor: default; outline: none; }
+.idrow:focus-visible { box-shadow: 0 0 0 2px #6fdc9f; border-radius: 8px; }
+.idrow__k { font: 500 10.5px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: rgba(243, 239, 233, .5); }
+.idrow__v { font: 600 16.5px/1.25 var(--sans); }
+.idrow__v i { display: inline-block; width: 8px; height: 8px; margin-right: 8px; border-radius: 50%; background: #3fbf7f; box-shadow: 0 0 10px 1px rgba(63, 191, 127, .75); vertical-align: 1px; animation: rec 2s ease-in-out infinite; }
+.idrow__chev { width: 9px; height: 9px; justify-self: end; border-right: 1.6px solid rgba(243, 239, 233, .6); border-bottom: 1.6px solid rgba(243, 239, 233, .6); transform: rotate(45deg) translate(-2px, -2px); transition: transform .3s var(--ease); }
+.idrow__menu {
+  position: absolute; left: -10px; right: -10px; top: calc(100% - 6px); z-index: 5;
+  padding: 8px; border-radius: 14px; background: #262322; box-shadow: 0 30px 60px -20px rgba(0, 0, 0, .7), 0 0 0 1px rgba(255, 255, 255, .08);
+  opacity: 0; transform: translateY(-6px) scale(.98); transform-origin: top; pointer-events: none; transition: opacity .2s var(--ease), transform .25s var(--ease);
+}
+.idrow__menu ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.idrow__menu li, .idrow__menu a { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border-radius: 9px; font: 500 14.5px/1.2 var(--sans); color: #f3efe9; text-decoration: none; }
+.idrow__menu li::before { content: ""; flex: none; width: 5px; height: 5px; border-radius: 50%; background: #6fdc9f; margin-right: 2px; order: -1; }
+.idrow__menu li { justify-content: flex-start; }
+.idrow__menu li:has(a) { padding: 0; } .idrow__menu li:has(a)::before { display: none; }
+.idrow__menu a { width: 100%; }
+.idrow__menu a::before { content: ""; flex: none; width: 5px; height: 5px; border-radius: 50%; background: #6fdc9f; }
+.idrow__menu a span { margin-left: auto; color: #9fe0bb; opacity: 0; transition: opacity .2s; }
+.idrow__menu li:hover, .idrow__menu a:hover { background: rgba(255, 255, 255, .06); }
+.idrow__menu a:hover span { opacity: 1; }
+.idrow:hover .idrow__menu, .idrow:focus-within .idrow__menu, .idrow.is-open .idrow__menu { opacity: 1; transform: none; pointer-events: auto; }
+.idrow:hover .idrow__chev, .idrow:focus-within .idrow__chev, .idrow.is-open .idrow__chev { transform: rotate(225deg) translate(-2px, -2px); }
+.idrow:hover, .idrow.is-open { z-index: 6; }
+.idcard__foot { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; padding-top: 14px; border-top: 1px dashed rgba(255, 255, 255, .18); font: 500 11px/1 var(--mono); letter-spacing: .06em; color: rgba(243, 239, 233, .45); }
+.idcard__foot a { color: #9fe0bb; text-decoration: none; }
+.idcard__foot a:hover { text-decoration: underline; text-underline-offset: 3px; }
+@media (max-width: 900px) { .hero__side { justify-items: stretch; } .idcard { width: 100%; } }
+@media (max-width: 420px) { .idrow { grid-template-columns: 70px 1fr 14px; } .idrow__v { font-size: 15.5px; } }
+
+/* ───────── proof: the bots, bigger and centred, with plain-language reliability stats ───────── */
+.proof { width: min(var(--max), 100%); margin: 0 auto; padding: clamp(40px, 6vw, 80px) var(--pad) clamp(70px, 9vw, 110px); }
+.proof__head { text-align: center; display: grid; justify-items: center; }
+.proof__head .h2 { max-width: 20ch; }
+.proof__pitch { width: min(680px, 100%); margin: clamp(10px, 2vw, 24px) auto 0; }
+.proof__stats { list-style: none; margin: clamp(26px, 4vw, 44px) 0 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid var(--ink); }
+.proof__stats li { padding: 22px 22px 6px 0; }
+.proof__stats li + li { padding-left: 22px; border-left: 1px solid var(--line); }
+.proof__stats b { display: block; font: 400 clamp(38px, 4vw, 54px)/1 var(--serif); letter-spacing: -.02em; color: var(--forest); }
+.proof__stats p { margin: 12px 0 0; max-width: 30ch; font-size: 15.5px; line-height: 1.55; color: var(--ink-2); }
+@media (max-width: 860px) {
+  .proof__stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .proof__stats li:nth-child(3) { padding-left: 0; border-left: 0; }
+  .proof__stats li:nth-child(n+3) { border-top: 1px solid var(--line); }
+}
+@media (max-width: 480px) {
+  .proof__stats { grid-template-columns: 1fr; }
+  .proof__stats li, .proof__stats li + li { padding: 18px 0 14px; border-left: 0; }
+  .proof__stats li + li { border-top: 1px solid var(--line); }
+}
+
+/* touch and small screens: card rows expand in place (accordion) instead of floating */
+@media (max-width: 900px), (hover: none) {
+  .idrow__menu {
+    position: static; grid-column: 1 / -1; max-height: 0; overflow: hidden; padding: 0 6px; margin: 0 -4px;
+    opacity: 0; transform: none; transition: max-height .35s var(--ease), opacity .25s var(--ease), padding .3s var(--ease), margin .3s var(--ease);
+  }
+  .idrow:hover .idrow__menu, .idrow:focus-within .idrow__menu { max-height: 0; opacity: 0; padding: 0 6px; margin: 0 -4px; pointer-events: none; }
+  .idrow.is-open .idrow__menu { max-height: 340px; opacity: 1; padding: 6px; margin: 10px -4px 0; pointer-events: auto; }
+  .idrow:hover .idrow__chev, .idrow:focus-within .idrow__chev { transform: rotate(45deg) translate(-2px, -2px); }
+  .idrow.is-open .idrow__chev { transform: rotate(225deg) translate(-2px, -2px); }
+}
+.proof__pitch { margin-top: -6px; }
