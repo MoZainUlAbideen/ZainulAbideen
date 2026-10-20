@@ -353,6 +353,12 @@ const host = (url) => url.replace(/^https?:\/\//, '').replace(/\/$/, '');
   if (!reduced) requestAnimationFrame(loop);
 })();
 
+// ───────── top-left wordmark: hidden while the hero name is visible ─────────
+(function nameSwap() {
+  const who = $('#hero-who'), nav = $('#nav'); if (!who || !nav) return;
+  new IntersectionObserver(([e]) => nav.classList.toggle('is-name-visible', e.isIntersecting), { rootMargin: '-60px 0px 0px 0px' }).observe(who);
+})();
+
 // ───────── custom cursor: a crosshair that opens into a ring over anything clickable ─────────
 (function cursor() {
   if (!matchMedia('(hover: hover) and (pointer: fine)').matches || reduced) return;
