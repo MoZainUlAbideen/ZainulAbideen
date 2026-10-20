@@ -355,6 +355,18 @@ const host = (url) => url.replace(/^https?:\/\//, '').replace(/\/$/, '');
 
 // ───────── profile card: rows open on click/tap, one at a time ─────────
 (function idcard() {
+  // fit ZAIN-UL-ABIDEEN to the width of the card, on one line
+  const fit = document.querySelector('.idcard__fit');
+  const fitName = () => {
+    if (!fit) return;
+    const box = fit.parentElement.clientWidth;
+    fit.style.fontSize = '100px';
+    const w = fit.scrollWidth;
+    fit.style.fontSize = Math.max(22, Math.min(64, Math.floor(100 * box / w * 0.99))) + 'px';
+  };
+  fitName();
+  document.fonts?.ready.then(fitName);
+  addEventListener('resize', fitName);
   const rows = [...document.querySelectorAll('.idrow')]; if (!rows.length) return;
   const set = (r, open) => { r.classList.toggle('is-open', open); r.setAttribute('aria-expanded', String(open)); };
   const toggle = (r) => { const open = !r.classList.contains('is-open'); rows.forEach((x) => set(x, false)); set(r, open); };

@@ -718,3 +718,45 @@ a { color: inherit; }
 /* the card grows downward when a row opens, instead of re-centring */
 .hero__side { align-self: start; margin-top: clamp(12px, 4.5vw, 64px); }
 @media (max-width: 900px) { .hero__side { margin-top: 0; } }
+
+/* ───────── card v3: vertical (portrait), orbit lines in the background ───────── */
+.idcard { width: min(372px, 100%); min-height: 540px; display: flex; flex-direction: column; padding: 30px 46px 18px 26px; overflow: hidden; }
+.idcard__orbit { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
+.idcard__orbit ellipse { fill: none; stroke: rgba(255, 255, 255, .09); stroke-width: 1; }
+.idcard__orbit ellipse:nth-child(2) { stroke: rgba(111, 220, 159, .16); stroke-dasharray: 2 6; }
+.idcard__orbit ellipse:nth-child(3) { stroke: rgba(255, 255, 255, .06); }
+.idcard__sat { fill: #6fdc9f; filter: drop-shadow(0 0 4px rgba(111, 220, 159, .9)); transform: rotate(-28deg); transform-origin: 250px 150px; }
+.idcard__edge { position: absolute; right: 14px; top: 30px; margin: 0; writing-mode: vertical-rl; font: 500 10.5px/1 var(--mono); letter-spacing: .22em; text-transform: uppercase; color: rgba(243, 239, 233, .38); }
+.idcard__name { gap: 4px; margin-top: 8px; }
+.idcard__name small { margin-bottom: 10px; }
+.idcard__name span { font-size: clamp(40px, 3.9vw, 54px); line-height: .9; }
+.idcard__role { display: none; }
+.idcard__rows { margin-top: auto; padding-top: 30px; }
+.idrow { grid-template-columns: 1fr 18px; grid-template-areas: "k chev" "v chev" "menu menu"; row-gap: 7px; }
+.idrow__k { grid-area: k; }
+.idrow__v { grid-area: v; font-size: 17px; }
+.idrow__chev { grid-area: chev; align-self: center; }
+.idrow__menu, .idrow:hover .idrow__menu, .idrow:focus-within .idrow__menu { grid-area: menu; }
+@media (max-width: 900px) { .idcard { width: 100%; min-height: 0; } .idcard__name span { font-size: clamp(38px, 11vw, 54px); } }
+@media (prefers-reduced-motion: reduce) { .idcard__sat { display: none; } }
+
+.idcard { min-height: 520px; }
+.idcard__orbit circle.o-faint { fill: none; stroke: rgba(255, 255, 255, .06); }
+.idcard__orbit ellipse { stroke: rgba(255, 255, 255, .13); }
+.idcard__orbit ellipse.o-dash { stroke: rgba(111, 220, 159, .22); stroke-dasharray: 2 6; }
+.idcard__sat { transform: none; }
+.hero__side { margin-top: 0; }
+
+/* orbit lives in its own band between the name and the rows, so it never touches text */
+.idcard { min-height: 0; }
+.idcard__orbit { position: relative; inset: auto; z-index: 0; height: 112px; margin: 14px -6px 4px; }
+.idcard__orbit svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.idcard__orbit ellipse { fill: none; stroke: rgba(255, 255, 255, .16); stroke-width: 1; }
+.idcard__orbit ellipse.o-dash { stroke: rgba(111, 220, 159, .3); stroke-dasharray: 2 6; }
+.idcard__orbit ellipse.o-core { stroke: none; fill: rgba(111, 220, 159, .07); }
+.idcard__rows { margin-top: 0; padding-top: 0; }
+.idcard__corner { position: absolute; right: 0; top: 0; width: 220px; height: 220px; z-index: -1; pointer-events: none; }
+.idcard__corner circle { fill: none; stroke: rgba(255, 255, 255, .06); }
+
+/* full surname on one line; JS sizes it to the card's width */
+.idcard__name span.idcard__fit { display: block; white-space: nowrap; font-size: 34px; line-height: 1; }
