@@ -816,3 +816,14 @@ a { color: inherit; }
   .nav__links a:active { transform: none; }
   .nav__links .nav__cta { font-weight: 600; }
 }
+/* Résumé: back to the rounded black button, set apart from the section tabs */
+@media (min-width: 861px) {
+  .nav__links { grid-template-columns: repeat(7, minmax(0, 1fr)) auto; }
+  .nav__links .nav__cta {
+    height: 40px; margin: 6px 8px 6px 22px; padding: 0 22px; border-radius: 10px;
+    background: var(--ink); color: var(--paper); font-weight: 600;
+  }
+  .nav__links .nav__cta::before { display: none; }
+  .nav__links .nav__cta:hover { background: #000; color: var(--paper); }
+  .nav__links a:nth-last-child(2) { box-shadow: 1px 0 0 0 var(--line-2, rgba(21, 19, 19, .14)); }
+}
