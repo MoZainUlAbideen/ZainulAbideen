@@ -768,3 +768,7 @@ a { color: inherit; }
   .hero__side { order: -1; margin-bottom: 8px; }
   .idcard { width: calc(100% - 14px); }
 }
+/* card sits centred in its column, nudged left and up, so there's no dead gap beside the copy */
+@media (min-width: 901px) {
+  .hero__side { justify-items: center; margin-top: -18px; transform: translateX(-4%); }
+}
