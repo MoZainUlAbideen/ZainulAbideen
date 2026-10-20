@@ -330,6 +330,57 @@ const host = (url) => url.replace(/^https?:\/\//, '').replace(/\/$/, '');
     ctx.restore();
   };
 
+  // ── me, at the bottom-left corner: watching, then noting every pass on a clipboard ──
+  const ME = { x: 66, y: GY + 31, s: 1.05 };
+  const drawMe = () => {
+    const t = time;
+    // looks up at the play for a while, then down at the sheet to write
+    const cycle = t % 5.2, writing = cycle > 3.1;
+    const look = writing ? 0 : clamp((ball.x - ME.x) / 300, 0, 1);
+    const pen = writing ? Math.sin(t * 22) * 1.3 : 0;
+    ctx.save(); ctx.translate(ME.x, ME.y); ctx.scale(ME.s, ME.s);
+    ctx.fillStyle = 'rgba(21,19,19,.16)'; ctx.beginPath(); ctx.ellipse(2, 1, 17, 3.6, 0, 0, Math.PI * 2); ctx.fill();
+    // legs + shoes
+    ctx.fillStyle = '#2b2f3a'; ctx.beginPath(); ctx.roundRect(-6.5, -26, 6, 26, 2.5); ctx.roundRect(1.5, -26, 6, 26, 2.5); ctx.fill();
+    ctx.fillStyle = '#151313'; ctx.beginPath(); ctx.roundRect(-8, -3, 9, 4, 2); ctx.roundRect(1, -3, 10, 4, 2); ctx.fill();
+    // torso (white tee with a dark stripe, like the photo)
+    ctx.fillStyle = '#ece8e2'; ctx.beginPath(); ctx.roundRect(-9, -50, 19, 26, [7, 7, 3, 3]); ctx.fill();
+    ctx.fillStyle = '#2b2827'; ctx.fillRect(-9, -40, 19, 2.2);
+    // back arm holding the clipboard up in front of the chest
+    ctx.strokeStyle = '#ece8e2'; ctx.lineWidth = 5; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(-6, -46); ctx.lineTo(1, -36); ctx.stroke();
+    // clipboard, tilted toward the viewer, with a tally of passes
+    ctx.save(); ctx.translate(9, -40); ctx.rotate(-.18);
+    ctx.fillStyle = '#9a6b3f'; ctx.beginPath(); ctx.roundRect(-1, -9, 15, 19, 2); ctx.fill();
+    ctx.fillStyle = '#fbfaf7'; ctx.fillRect(1, -6, 11, 14);
+    ctx.fillStyle = '#5c5552'; ctx.fillRect(4, -10.5, 5, 3);
+    ctx.strokeStyle = '#23473a'; ctx.lineWidth = .9;
+    const marks = passes % 10;
+    for (let k = 0; k < marks; k++) {
+      const row = k < 5 ? 0 : 1, col = k % 5;
+      ctx.beginPath(); ctx.moveTo(2.6 + col * 2, -3.5 + row * 6); ctx.lineTo(2.6 + col * 2, .5 + row * 6); ctx.stroke();
+    }
+    ctx.strokeStyle = 'rgba(92,85,82,.35)'; ctx.lineWidth = .6;
+    for (let k = 0; k < 2; k++) { ctx.beginPath(); ctx.moveTo(2.2, 2 + k * 6 - 6 + 9); ctx.lineTo(11, 2 + k * 6 - 6 + 9); ctx.stroke(); }
+    ctx.restore();
+    // front arm + pen
+    ctx.strokeStyle = '#ece8e2'; ctx.lineWidth = 5;
+    ctx.beginPath(); ctx.moveTo(7, -46); ctx.lineTo(13 + pen * .4, -38 + pen * .3); ctx.stroke();
+    ctx.fillStyle = '#c98f63'; ctx.beginPath(); ctx.arc(14 + pen * .4, -37.5 + pen * .3, 2.4, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#151313'; ctx.lineWidth = 1.3;
+    ctx.beginPath(); ctx.moveTo(14 + pen * .4, -37 + pen * .3); ctx.lineTo(17 + pen * .4, -42 + pen * .3); ctx.stroke();
+    // head: tilts down to write, turns toward the ball to watch
+    ctx.save(); ctx.translate(1.5, -56); ctx.rotate(writing ? .32 : -.06 - look * .08);
+    ctx.fillStyle = '#c98f63'; ctx.beginPath(); ctx.roundRect(-2.6, 2, 5.2, 5, 1.5); ctx.fill();          // neck
+    ctx.beginPath(); ctx.arc(0, -2, 7.4, 0, Math.PI * 2); ctx.fill();                                      // face
+    ctx.fillStyle = '#1d1916'; ctx.beginPath(); ctx.arc(0, 1.5, 6.6, .15 * Math.PI, .85 * Math.PI); ctx.fill(); // beard
+    ctx.fillStyle = '#151313'; ctx.beginPath(); ctx.arc(0, -3.8, 7.6, Math.PI, 0); ctx.fill();            // cap
+    ctx.beginPath(); ctx.roundRect(0, -5, 11, 2.6, 1.3); ctx.fill();                                        // cap brim, facing the play
+    ctx.fillStyle = '#1d1916'; ctx.beginPath(); ctx.arc(2.6 + look, -1 + (writing ? 1 : 0), .95, 0, Math.PI * 2); ctx.arc(5.6 + look, -1 + (writing ? 1 : 0), .95, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+    ctx.restore();
+  };
+
   const draw = () => {
     ctx.setTransform(dpr * scale, 0, 0, dpr * scale, 0, -OFF * dpr * scale);
     ctx.clearRect(0, 0, W, H + OFF);
@@ -337,6 +388,7 @@ const host = (url) => url.replace(/^https?:\/\//, '').replace(/\/$/, '');
     drawPitch();
     dust.forEach((d) => { ctx.fillStyle = `rgba(120,140,125,${d.life * 1.2})`; ctx.beginPath(); ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2); ctx.fill(); });
     drawBot(bots[0], 0); drawBot(bots[1], 1);
+    drawMe();
     drawBall();
   };
 
