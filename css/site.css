@@ -43,7 +43,7 @@ a { color: inherit; }
 .eyebrow .dot { width: 7px; height: 7px; border-radius: 50%; background: #3fbf7f; box-shadow: 0 0 0 4px rgba(63, 191, 127, .18); }
 .h2 { margin: 0; font: 400 clamp(32px, 4.2vw, 52px)/1.06 var(--serif); letter-spacing: -.018em; color: var(--ink); text-wrap: balance; }
 .h2--light { color: #fffdfc; }
-.lede { margin: 18px 0 0; max-width: 620px; color: var(--ink-2); font-size: 18px; }
+.lede { margin: 18px 0 0; max-width: 620px; color: var(--ink-2); font-size: 18px; text-wrap: pretty; }
 
 .btn {
   display: inline-flex; align-items: center; gap: 8px; height: 48px; padding: 0 22px;
