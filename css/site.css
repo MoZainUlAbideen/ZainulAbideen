@@ -845,3 +845,31 @@ a { color: inherit; }
 .idcard__cv span { color: #9fe0bb; transition: transform .2s var(--ease), color .2s; }
 .idcard__cv:hover { background: #fff; color: #000; border-color: #fff; }
 .idcard__cv:hover span { color: #000; transform: translate(2px, -2px); }
+
+/* card v5: a little more 3D. A short solid "side" (stepped shadows) makes it read as a raised slab,
+   a soft long shadow lands on the page, and a faint top-left edge catches the light. */
+.idcard {
+  transform: translate(-6px, -6px);
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, .14),
+    1px 1px 0 #1b1a19, 2px 2px 0 #1d1c1b, 3px 3px 0 #1f1e1c, 4px 4px 0 #211f1e,
+    5px 5px 0 #23211f, 6px 6px 0 #252321, 7px 7px 0 #262422, 8px 8px 0 #282624,
+    10px 12px 6px -2px rgba(21, 19, 19, .28),
+    26px 34px 46px -12px rgba(21, 19, 19, .5),
+    48px 64px 80px -30px rgba(21, 19, 19, .35);
+  transition: transform .35s var(--ease), box-shadow .35s var(--ease);
+}
+@media (hover: hover) {
+  .idcard:hover {
+    transform: translate(-8px, -8px);
+    box-shadow:
+      inset 1px 1px 0 rgba(255, 255, 255, .16),
+      1px 1px 0 #1b1a19, 2px 2px 0 #1d1c1b, 3px 3px 0 #1f1e1c, 4px 4px 0 #211f1e,
+      5px 5px 0 #23211f, 6px 6px 0 #252321, 7px 7px 0 #262422, 8px 8px 0 #282624,
+      9px 9px 0 #292725, 10px 10px 0 #2a2826,
+      12px 14px 8px -2px rgba(21, 19, 19, .3),
+      30px 40px 52px -12px rgba(21, 19, 19, .52),
+      56px 74px 90px -30px rgba(21, 19, 19, .36);
+  }
+}
+@media (prefers-reduced-motion: reduce) { .idcard { transition: none; } }
