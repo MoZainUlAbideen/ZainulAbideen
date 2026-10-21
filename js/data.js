@@ -221,7 +221,7 @@ export const BEYOND = [
           { src: 'assets/life/arena-dome-outside.jpg', alt: 'The arena from outside: a glass dome with steel ribs over the pitch, stands and big screen' },
           { src: 'assets/life/arena-dome-inside.jpg', alt: 'Inside the dome: the neon pitch, glowing podiums along the glass walls and the big screen behind the goal' },
         ],
-        a: "Wanted to put Opus to work, so I asked it to build me a Rocket League-style video game. Totally normal portfolio behaviour. It made me this cracker of a thing anyway: my purple desk-toy Mini 4WD rebuilt in 3D, a glass-domed stadium, a red bot that takes 1:30 matches far too seriously, and, somewhere between the goals, my actual work behind glowing podiums.",
+        a: "Wanted to put Opus to work, so I asked it to build me a Rocket League-style video game. It made me this cracker of a thing anyway: my purple desk-toy Mini 4WD rebuilt in 3D, a glass-domed stadium, a red bot that takes 90 second matches far too seriously, and, somewhere between the goals, my actual work behind glowing podiums.",
         link: { label: 'Take it for a drive', href: 'https://m-zain-ul-abideen-portfolio.vercel.app/' } },
     ],
   },

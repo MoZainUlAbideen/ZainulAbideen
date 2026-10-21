@@ -580,8 +580,10 @@ $('#certs').append(...CERTS.map((c) => h('li', { class: 'reveal' }, h('a', { hre
           h('p', {}, it.a),
           it.quote ? h('blockquote', { class: 'quote' }, h('p', {}, `“${it.quote}”`), h('cite', {}, `— ${it.by}`)) : null,
           it.stadiums ? h('div', { class: 'stadia' }, it.stadiums.map((s) => h('figure', {}, h('img', { src: s.img, alt: s.name, loading: 'lazy' }), h('figcaption', {}, s.name)))) : null,
-          it.compare ? h('img', { class: 'acc__compare', src: it.compare, alt: 'The purple Beyond Mini 4WD toy car next to its 3D replica in the arena portfolio', loading: 'lazy' }) : null,
-          it.shots ? h('div', { class: 'acc__shots' }, it.shots.map((s) => h('a', { href: s.src, ...ext }, h('img', { src: s.src, alt: s.alt, loading: 'lazy', width: 1600, height: 900 })))) : null,
+          // gallery: first shot across the top, the rest (and the car comparison) in a row underneath
+          it.compare || it.shots ? h('div', { class: 'acc__gallery' },
+            [...(it.shots || []), ...(it.compare ? [{ src: it.compare, alt: 'The purple Beyond Mini 4WD toy car next to its 3D replica in the arena portfolio' }] : [])]
+              .map((s) => h('a', { href: s.src, ...ext }, h('img', { src: s.src, alt: s.alt, loading: 'lazy' })))) : null,
           it.link ? h('a', { class: 'acc__link', href: it.link.href, ...ext }, it.link.label, h('span', { 'aria-hidden': 'true' }, '↗')) : null,
         ),
         it.photo ? h('img', { class: 'acc__photo', src: it.photo, alt: it.photoAlt, loading: 'lazy' }) : null,
