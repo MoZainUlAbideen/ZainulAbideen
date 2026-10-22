@@ -218,8 +218,10 @@ export const BEYOND = [
     items: [
       { q: 'A Rocket League arena, driven by my desk toy', compare: 'assets/life/beyond-real-vs-game.jpg',
         shots: [
-          { src: 'assets/life/arena-dome-outside.jpg', alt: 'The arena from just under the glass dome: the pitch, both goals, the podium booths, the crowd and the big screen' },
-          { src: 'assets/life/arena-dome-inside.jpg', alt: 'Inside the dome: the neon pitch, glowing podiums along the glass walls and the big screen behind the goal' },
+          { src: 'assets/life/arena-dome-outside.jpg', alt: 'The arena from just under the glass dome, with the city skyline beyond it: the pitch, both goals, the podium booths, the crowd and the big screen' },
+          { src: 'assets/life/arena-dome-inside.jpg', alt: 'Down on the pitch behind the purple car, the ball ahead and the city towers above the stands' },
+          { src: 'assets/life/arena-wall.jpg', alt: 'The car driving up the curved glass wall, with the skyline behind it' },
+          { src: 'assets/life/arena-city.jpg', alt: 'From above the city: the glass dome over the stadium, ringed by towers' },
         ],
         a: "Wanted to put Opus to work, so I asked it to build me a Rocket League-style video game. It made me this cracker of a thing anyway: my purple desk-toy Mini 4WD rebuilt in 3D, a glass-domed stadium, a red bot that takes 90 second matches far too seriously, and, somewhere between the goals, my actual work behind glowing podiums.",
         link: { label: 'Take it for a drive', href: 'https://m-zain-ul-abideen-portfolio.vercel.app/' } },
