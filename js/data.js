@@ -33,13 +33,13 @@ export const PROJECTS = [
     name: 'Dehqan',
     kind: 'Computer vision',
     tagline: 'A crop doctor for Pakistani farmers that tells you when it is not sure.',
-    metric: { from: '11.5%', to: '47.4%', label: 'accuracy on real field photos (lab: 95.5%)' },
+    metric: { from: '11.5%', to: '61.6%', label: 'accuracy on real field photos (lab: 95.5%)' },
     points: [
-      '27-condition, 14-crop leaf-disease classifier with its lab-to-field gap measured and published, not hidden.',
-      'Selective prediction defers to extension offices below 0.9 confidence (79% accuracy on answered photos), plus a zero-shot CLIP leaf gate and a segmentation severity grader (81.5% vs 42% baseline).',
-      'Routes English, Roman Urdu and Urdu questions (90% on a frozen test set) and refuses pesticide-dose requests (7/7).',
+      '27-condition, 13-crop leaf-disease classifier with its lab-to-field gap measured and published; a CLIP embedding with a trained head lifts held-out field accuracy to 61.6% as deployed in int8 ONNX, vs a 7.4% baseline.',
+      'Selective prediction defers to extension offices below 0.9 confidence (answers 56% of field photos at 81% accuracy), plus a zero-shot CLIP leaf gate (99.8% of leaves accepted vs 23.6% using classifier confidence) and a segmentation severity grader (81.5% vs 42% baseline).',
+      'Urdu/English voice chat in the browser over a router for English, Roman Urdu and Urdu questions (90% on a frozen test set) that refuses pesticide-dose requests (7/7).',
     ],
-    tech: ['Python', 'PyTorch', 'CLIP', 'Segmentation'],
+    tech: ['Python', 'PyTorch', 'CLIP', 'ONNX'],
     live: 'https://dehqan.vercel.app', repo: `${GH}/Dehqan`,
     shot: 'assets/projects/dehqan.jpg', tint: 'field',
   },
@@ -151,7 +151,7 @@ export const EXPERIENCE = [
 // From the current resume's Technical Skills
 export const STACK = [
   ['LLM & Retrieval', ['RAG', 'Agentic workflows', 'Hybrid search (BM25, RRF)', 'Embeddings', 'Rerankers', 'Evals (Recall@k, MRR, LLM-as-judge)', 'Gemini', 'Groq', 'Langfuse'], ['Earshot', 'EdgarIQ', 'Rehnuma', 'Parity']],
-  ['ML & Vision', ['PyTorch', 'Scikit-learn', 'Image classification', 'Segmentation', 'CLIP', 'Selective prediction', 'Whisper'], ['Dehqan', 'Earshot', 'RISETech']],
+  ['ML & Vision', ['PyTorch', 'Scikit-learn', 'Image classification', 'Segmentation', 'CLIP', 'ONNX Runtime', 'Selective prediction', 'Whisper'], ['Dehqan', 'Earshot', 'RISETech']],
   ['Backend & Data', ['Python', 'FastAPI', 'PostgreSQL', 'pgvector', 'REST APIs', 'SQLAlchemy', 'Playwright', 'Next.js'], ['Earshot', 'Parity', 'Rehnuma', 'Job Assistant']],
   ['MLOps & Cloud', ['Docker', 'GitHub Actions', 'CI/CD with eval gates', 'pytest', 'Git', 'Render', 'Vercel', 'Azure', 'GCP'], ['Rehnuma', 'Earshot', 'SPS']],
 ];
@@ -165,7 +165,7 @@ export const RULES = [
   { title: 'Refuse rather than guess.', body: 'When confidence is low, the system says so and hands off, instead of producing a fluent wrong answer.',
     proof: 'Dehqan', fact: 'Defers to extension offices below 0.9 confidence and refuses pesticide-dose requests, 7 out of 7.' },
   { title: 'Publish the failure cases.', body: 'The gap between a demo and the real world is a result, so it goes in the README, not under the rug.',
-    proof: 'Dehqan', fact: '95.5% in the lab, 47.4% on real field photos. Both numbers are on the project page.' },
+    proof: 'Dehqan', fact: '95.5% in the lab, 61.6% on real field photos. Both numbers are on the project page.' },
 ];
 
 export const CERTS = [
