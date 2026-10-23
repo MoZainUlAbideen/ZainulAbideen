@@ -460,10 +460,7 @@ const host = (url) => url.replace(/^https?:\/\//, '').replace(/\/$/, '');
 // by one (copy swaps on the left, screenshots slide up and stack on the right)
 // and the page only moves on after the last one. Phones: plain cards.
 (function projects() {
-  const metricEl = (p) => p.metric ? [
-    h('p', { class: 'metric' }, p.metric.from ? [h('s', {}, p.metric.from), h('i', { 'aria-hidden': 'true' }, '→')] : null, h('b', {}, p.metric.to)),
-    h('p', { class: 'metric__label' }, p.metric.label),
-  ] : null;
+  const aboutEl = (p) => p.about ? h('p', { class: 'pcard__about' }, p.about) : null;
   const linksEl = (p) => {
     const l = [];
     if (p.live) l.push(h('a', { href: p.live, ...ext }, 'Live ', h('span', { 'aria-hidden': 'true' }, '↗')));
@@ -480,7 +477,7 @@ const host = (url) => url.replace(/^https?:\/\//, '').replace(/\/$/, '');
     h('p', { class: 'pcard__top' }, h('span', {}, String(i + 1).padStart(2, '0') + ' · ' + p.kind), h('span', {}, p.live ? 'Live' : 'Open source')),
     h('h3', { class: 'pcard__name' }, p.name),
     h('p', { class: 'pcard__tag' }, p.tagline),
-    metricEl(p),
+    aboutEl(p),
     h('ul', { class: 'pcard__points' }, p.points.map((t) => h('li', {}, t))),
     h('div', { class: 'pcard__foot' }, h('ul', { class: 'tags' }, p.tech.map((t) => h('li', {}, t))), linksEl(p)),
   ];
@@ -501,7 +498,7 @@ const host = (url) => url.replace(/^https?:\/\//, '').replace(/\/$/, '');
     h('p', { class: 'pin__kicker' }, String(i + 1).padStart(2, '0') + ' / ' + String(N).padStart(2, '0') + ' · ' + p.kind),
     h('h3', { class: 'pin__name' }, p.name),
     h('p', { class: 'pin__tag' }, p.tagline),
-    p.metric ? h('p', { class: 'pin__metric' }, p.metric.from ? [h('s', {}, p.metric.from), ' → '] : null, h('b', {}, p.metric.to), h('span', {}, p.metric.label)) : null,
+    p.about ? h('p', { class: 'pin__about' }, p.about) : null,
     h('div', { class: 'pin__links' }, linksEl(p)),
   ];
   const copies = PROJECTS.map((p, i) => {
